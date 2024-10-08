@@ -1,2 +1,2 @@
 # PipeableResult
-Small and simple Result library (but pipeable)
+Small and simple Result library (but pipeable) in TypeScript
