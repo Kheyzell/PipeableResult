@@ -1,0 +1,30 @@
+{
+  "name": "pipeableresult",
+  "version": "1.0.0",
+  "description": "Small and simple Result library (but pipeable) in TypeScript",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kheyzell/PipeableResult.git"
+  },
+  "keywords": [
+    "Result",
+    "TypeScript",
+    "Pipeable"
+  ],
+  "author": "Kheyzell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Kheyzell/PipeableResult/issues"
+  },
+  "homepage": "https://github.com/Kheyzell/PipeableResult#readme",
+  "dependencies": {
+    "jest": "^29.7.0"
+  }
+}
