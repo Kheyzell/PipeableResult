@@ -30,7 +30,9 @@ type ResultInspectable<Value, Err extends ResultError> = {
      *     }
      * });
      */
-    unwrap: () => Value;
+    unwrap: (obj: {
+        err: (error: Err) => Value
+    }) => Value
 
     /**
      * Returns a string representation of the `Result`. If the `Result` is a `Failure`,
@@ -233,7 +235,7 @@ const failure = <E extends ResultError>(error: E): Failure<E> => ({
     type: 'failure',
     _error: error,
     pipe: (...fns) => fns.reduce((acc, fn) => fn(acc), fail(error)),
-    unwrap: () => { throw new Error('Cannot unwrap a Failure'); },
+    unwrap: obj => obj.err(error),
     inspect: () => `Failure(${error.message})`,
     isSuccess: () => false,
     isFailure: () => true,
