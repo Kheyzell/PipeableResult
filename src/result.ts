@@ -1,38 +1,13 @@
-export class Result<Value, Err extends ResultError> {
-    private _value: Value;
-    private _err: Err;
-
-    private _isFailure = false;
-
-    private constructor(v?: Value, e?: Err) {
-        if (v)
-            this._value = v;
-
-        if (e) {
-            this._err = e;
-            this._isFailure = true;
-        }
-    }
-
-    static succeed<Err extends ResultError>(): Result<any, Err>;
-    static succeed<Value, Err extends ResultError>(v: Value): Result<Value, Err>;
-    static succeed<Value, Err extends ResultError>(v?: Value): Result<Value, Err> {
-        return new Result(v);
-    }
-
-    static fail<Value, Err extends ResultError>(e: Err): Result<Value, Err> {
-        return new Result(null! as Value, e);
-    }
-
+export interface Result<Value, Err extends ResultError> {
     /**
      * Returns `true` if the `Result` is a `Success`, `false` otherwise.
      */
-    isSuccess = (): boolean => !this._isFailure;
+    isSuccess(): boolean;
 
     /**
      * Returns `true` if the `Result` is a `Failure`, `false` otherwise.
      */
-    isFailure = (): boolean => this._isFailure;
+    isFailure(): boolean;
 
     /**
      * Safely get the value inside the Result by handling the error case.
@@ -48,45 +23,25 @@ export class Result<Value, Err extends ResultError> {
      *     }
      * });
      */
-    unwrap(obj: { err: (error: Err) => Value }): Value {
-        if (this._isFailure) {
-            return obj.err(this._err);
-        }
-
-        return this._value;
-    };
+    unwrap(obj: { err: (error: Err) => Value }): Value;
 
     /**
      * Returns a string representation of the `Result`. If the `Result` is a `Failure`,
      * the string representation is `Failure(<error>)`. If the `Result` is a `Success`,
      * the string representation is `Success(<value>)`.
      */
-    inspect(): string {
-        if (this._isFailure) {
-            return `Failure(${this._err.message})`;
-        }
-
-        return `Success(${this._value})`;
-    }
-
+    inspect(): string;
+    
     /**
      * /!\ Unsafely /!\ Returns the value inside the `Result`.
      * Throws an error if it's a `Failure`.
      */
-    value(): Value {
-        if (this._isFailure) {
-            throw new Error('Cannot get value from Failure');
-        }
-
-        return this._value;
-    }
-
+    value(): Value;
+    
     /**
      * Returns the error if it's a `Failure`, or `null` if it's a `Success`.
      */
-    error(): Err | null {
-        return this._err;
-    }
+    error(): Err | null;
 
     /**
      * Chains multiple operations that take a `Result` and return a new `Result`. The `pipe`
@@ -115,6 +70,66 @@ export class Result<Value, Err extends ResultError> {
     pipe<A, B, C, D, E, F, G, H, I, J, K, L, M>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>, op13: ResultOperatorFunction<L, ResultError, M, ResultError>): Result<M, ResultError>;
     pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>, op13: ResultOperatorFunction<L, ResultError, M, ResultError>, op14: ResultOperatorFunction<M, ResultError, N, ResultError>): Result<N, ResultError>;
     pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>, op13: ResultOperatorFunction<L, ResultError, M, ResultError>, op14: ResultOperatorFunction<M, ResultError, N, ResultError>, op15: ResultOperatorFunction<N, ResultError, O, ResultError>): Result<O, ResultError>;
+}
+
+export class ResultImpl<Value, Err extends ResultError> implements Result<Value, Err> {
+    private _value: Value;
+    private _err: Err;
+
+    private _isFailure = false;
+
+    private constructor(v?: Value, e?: Err) {
+        if (v)
+            this._value = v;
+
+        if (e) {
+            this._err = e;
+            this._isFailure = true;
+        }
+    }
+
+    static succeed<Err extends ResultError>(): Result<any, Err>;
+    static succeed<Value, Err extends ResultError>(v: Value): Result<Value, Err>;
+    static succeed<Value, Err extends ResultError>(v?: Value): Result<Value, Err> {
+        return new ResultImpl(v);
+    }
+
+    static fail<Value, Err extends ResultError>(e: Err): Result<Value, Err> {
+        return new ResultImpl(null! as Value, e);
+    }
+
+    isSuccess = (): boolean => !this._isFailure;
+
+    isFailure = (): boolean => this._isFailure;
+
+    unwrap(obj: { err: (error: Err) => Value }): Value {
+        if (this._isFailure) {
+            return obj.err(this._err);
+        }
+
+        return this._value;
+    };
+
+    inspect(): string {
+        if (this._isFailure) {
+            return `Failure(${this._err.message})`;
+        }
+
+        return `Success(${this._value})`;
+    }
+
+    value(): Value {
+        if (this._isFailure) {
+            throw new Error('Cannot get value from Failure');
+        }
+
+        return this._value;
+    }
+
+    error(): Err | null {
+        return this._err;
+    }
+
     pipe(...fns: Array<ResultOperatorFunction<any, ResultError, any, ResultError>>): Result<any, ResultError> {
         return pipeFromArray(fns)(this);
     }
@@ -154,7 +169,7 @@ export const map = <Value, Err extends ResultError, A>(
     if (result.isSuccess()) {
         return succeed(fn(result.value())) as Result<A, Err>;
     }
-    return Result.fail(result.error()!)
+    return ResultImpl.fail(result.error()!)
 };
 
 /**
@@ -172,7 +187,7 @@ export const mapErr = <Value, Err extends ResultError, B extends ResultError>(
     if (result.isFailure()) {
         return fail(fn(result.error()!)) as Result<Value, B>;
     }
-    return Result.succeed(result.value());
+    return ResultImpl.succeed(result.value());
 };
 
 /**
@@ -194,13 +209,13 @@ export const chain = <Value, Err extends ResultError, A>(
 
         if (isError<Err>(fnValue)) {
             const error = fnValue as Err;
-            return Result.fail(error) as Result<A, Err>;
+            return ResultImpl.fail(error) as Result<A, Err>;
         }
 
         return succeed(fnValue) as Result<A, Err>;
     }
 
-    return Result.fail(result.error()!);
+    return ResultImpl.fail(result.error()!);
 };
 
 /**
@@ -221,13 +236,13 @@ export const chainErr = <Value, Err extends ResultError, B extends ResultError>(
         }
 
         if (isError(fnValue)) {
-            return Result.fail(fnValue) as Result<Value, B>;
+            return ResultImpl.fail(fnValue) as Result<Value, B>;
         }
 
         return succeed(fnValue) as Result<Value, B>;
     }
 
-    return Result.succeed(result.value()) as Result<Value, B>;
+    return ResultImpl.succeed(result.value()) as Result<Value, B>;
 };
 
 /**
@@ -287,14 +302,27 @@ export const match = <Value, Err extends ResultError>(
 };
 
 /** Constructors **/
+
+/**
+ * Creates a `Success` `Result` with the provided value.
+ * 
+ * @example
+ * const result = succeed(5);
+ */
 export function succeed(): Result<any, any>;
 export function succeed<O>(arg: O): Result<O, any>;
 export function succeed<O>(arg?: O): Result<O | undefined, any> {
-    return Result.succeed(arg);
+    return ResultImpl.succeed(arg);
 }
 
+/**
+ * Creates a `Failure` `Result` with the provided error.
+ * 
+ * @example
+ * const result = fail(new ResultError('Error', 'Something went wrong'));
+ */
 export function fail<E extends ResultError>(arg: E): Result<any, E> {
-    return Result.fail(arg);
+    return ResultImpl.fail(arg);
 }
 
 type OperatorFunction<A, B> = (a: A) => B;
