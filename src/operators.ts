@@ -50,7 +50,7 @@ export const mapErr = <Value, Err extends ResultError, B extends ResultError>(
  * const chainedResult = result.pipe(chain(x => succeed(x * 2))); // Returns a `Success` with value 10
  */
 export const chain = <Value, Err extends ResultError, A>(
-    fn: (arg: Value) => (Result<A, Err> | A)
+    fn: (arg: Value) => (Result<A, Err> | A | Err)
 ) => (result: Result<Value, Err>): Result<A, Err> => {
     if (result.isSuccess()) {
         const fnValue = fn(result.value());
@@ -78,7 +78,7 @@ export const chain = <Value, Err extends ResultError, A>(
  * const handledResult = result.pipe(chainErr(e => succeed([]))); // Converts the failure to success
  */
 export const chainErr = <Value, Err extends ResultError, B extends ResultError>(
-    fn: (arg: Err) => (Result<Value, B> | B)
+    fn: (arg: Err) => (Result<Value, B> | Value | B)
 ) => (result: Result<Value, Err>): Result<Value, B> => {
     if (result.isFailure()) {
         const fnValue = fn(result.error()!);
