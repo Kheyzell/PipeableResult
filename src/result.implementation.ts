@@ -1,5 +1,6 @@
 import { Result } from "./result.interface";
 import { ResultOperatorFunction } from "./types";
+import { succeed } from './factories';
 
 /* Result implementation */
 
@@ -43,7 +44,7 @@ export class ResultImpl<Value, Err extends ResultError> implements Result<Value,
 
     inspect(): string {
         if (this._isFailure) {
-            return `Failure(${this._err!.message})`;
+            return `Failure(${this._err!.name}: ${this._err!.message})`;
         }
 
         return `Success(${this._value})`;
@@ -91,11 +92,42 @@ function pipeFromArray<T, R>(fns: Array<UnaryFunction<T, R>>): UnaryFunction<T, 
         return identity as UnaryFunction<any, any>;
     }
 
-    if (fns.length === 1) {
-        return fns[0];
-    }
-
     return function piped(input: Result<T, ResultError>): Result<R, ResultError> {
-        return fns.reduce((prev: any, fn: UnaryFunction<T, R>) => fn(prev), input as any);
+        return fns.reduce((prev: any, fn: UnaryFunction<T, R>) => {
+            const res = applyFn(fn, prev);
+
+            if (res instanceof Promise) {
+                return res.then(resV => unwrapPromiseInResult(resV));
+            } else {
+                return unwrapPromiseInResult(res);
+            }
+        }, input as any);
     };
+}
+
+function applyFn<T, R>(fn: UnaryFunction<T, R>, input: any): Result<R, ResultError> | Promise<Result<R, ResultError>> {
+    if (input instanceof Promise) {
+        return input.then(v => fn(v));
+    } else {
+        return fn(input);
+    }
+}
+
+function unwrapPromiseInResult<T>(result: Result<T, ResultError>): Result<T, ResultError> | Promise<Result<T, ResultError>> {
+    if (result.isSuccess() && result.value() instanceof Promise) {
+        return (result.value() as Promise<T | Result<T, ResultError>>).then(value => {
+            if (value instanceof ResultImpl) {
+                return value;
+            }
+            return succeed(value);
+        }) as any;
+    } else if (result.isFailure() && result.error() instanceof Promise) {
+        return (result.error() as any as Promise<ResultError | Result<T, ResultError>>).then(error => {
+            if (error instanceof ResultImpl) {
+                return error;
+            }
+            return fail(error);
+        }) as any;
+    }
+    return result;
 }

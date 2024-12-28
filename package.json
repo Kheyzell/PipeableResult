@@ -7,7 +7,10 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "node out/app.js",
+    "prestart": "npm run build",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -31,6 +34,7 @@
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-typescript": "^7.26.0",
     "@types/jest": "^29.5.14",
-    "babel-jest": "^29.7.0"
+    "babel-jest": "^29.7.0",
+    "typescript": "^5.7.2"
   }
 }
