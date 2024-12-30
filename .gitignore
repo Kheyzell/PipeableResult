@@ -1,2 +1,5 @@
 .local/
 node_modules/
+out/
+.vscode/*
+!.vscode/launch.json
