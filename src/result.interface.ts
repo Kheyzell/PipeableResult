@@ -3,7 +3,7 @@ import { ResultOperatorFunction } from "./types";
 
 /* Result interface */
 
-export interface Result<Value, Err extends ResultError> {
+export interface Result<Value, Err extends ResultError = ResultError> {
     /**
      * Returns `true` if the `Result` is a `Success`, `false` otherwise.
      */
@@ -36,13 +36,13 @@ export interface Result<Value, Err extends ResultError> {
      * the string representation is `Success(<value>)`.
      */
     inspect(): string;
-    
+
     /**
      * /!\ Unsafely /!\ Returns the value inside the `Result`.
      * Throws an error if it's a `Failure`.
      */
     value(): Value;
-    
+
     /**
      * Returns the error if it's a `Failure`, or `null` if it's a `Success`.
      */
@@ -60,19 +60,166 @@ export interface Result<Value, Err extends ResultError> {
      * );
      */
     pipe(): Result<Value, ResultError>;
-    pipe<A>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>): Result<A, ResultError>;
-    pipe<A, B>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>): Result<B, ResultError>;
-    pipe<A, B, C>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>): Result<C, ResultError>;
-    pipe<A, B, C, D>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>): Result<D, ResultError>;
-    pipe<A, B, C, D, E>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>): Result<E, ResultError>;
-    pipe<A, B, C, D, E, F>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>): Result<F, ResultError>;
-    pipe<A, B, C, D, E, F, G>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>): Result<G, ResultError>;
-    pipe<A, B, C, D, E, F, G, H>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>): Result<H, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>): Result<I, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I, J>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>): Result<J, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I, J, K>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>): Result<K, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I, J, K, L>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>): Result<L, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I, J, K, L, M>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>, op13: ResultOperatorFunction<L, ResultError, M, ResultError>): Result<M, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>, op13: ResultOperatorFunction<L, ResultError, M, ResultError>, op14: ResultOperatorFunction<M, ResultError, N, ResultError>): Result<N, ResultError>;
-    pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>, op2: ResultOperatorFunction<A, ResultError, B, ResultError>, op3: ResultOperatorFunction<B, ResultError, C, ResultError>, op4: ResultOperatorFunction<C, ResultError, D, ResultError>, op5: ResultOperatorFunction<D, ResultError, E, ResultError>, op6: ResultOperatorFunction<E, ResultError, F, ResultError>, op7: ResultOperatorFunction<F, ResultError, G, ResultError>, op8: ResultOperatorFunction<G, ResultError, H, ResultError>, op9: ResultOperatorFunction<H, ResultError, I, ResultError>, op10: ResultOperatorFunction<I, ResultError, J, ResultError>, op11: ResultOperatorFunction<J, ResultError, K, ResultError>, op12: ResultOperatorFunction<K, ResultError, L, ResultError>, op13: ResultOperatorFunction<L, ResultError, M, ResultError>, op14: ResultOperatorFunction<M, ResultError, N, ResultError>, op15: ResultOperatorFunction<N, ResultError, O, ResultError>): Result<O, ResultError>;
+    pipe<A>(op1: ResultOperatorFunction<Value, ResultError, A, ResultError>): A extends Promise<infer A$> ? Promise<Result<A$, ResultError>> : Result<A, ResultError>;
+    pipe<A, B>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>
+    ): PipeResult<B, [A, B]>;
+    pipe<A, B, C>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>
+    ): PipeResult<C, [A, B, C]>;
+
+    pipe<A, B, C, D>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>
+    ): PipeResult<D, [A, B, C, D]>;
+    pipe<A, B, C, D, E>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>
+    ): PipeResult<E, [A, B, C, D, E]>;
+    pipe<A, B, C, D, E, F>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>
+    ): PipeResult<F, [A, B, C, D, E, F]>;
+    pipe<A, B, C, D, E, F, G>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>
+    ): PipeResult<G, [A, B, C, D, E, F, G]>;
+    pipe<A, B, C, D, E, F, G, H>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>
+    ): PipeResult<H, [A, B, C, D, E, F, G, H]>;
+    pipe<A, B, C, D, E, F, G, H, I>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>
+    ): PipeResult<I, [A, B, C, D, E, F, G, H, I]>;
+    pipe<A, B, C, D, E, F, G, H, I, J>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>,
+        op10: ResultOperatorFunction<UnwrapPromise<I>, ResultError, J, ResultError>
+    ): PipeResult<J, [A, B, C, D, E, F, G, H, I, J]>;
+    pipe<A, B, C, D, E, F, G, H, I, J, K>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>,
+        op10: ResultOperatorFunction<UnwrapPromise<I>, ResultError, J, ResultError>,
+        op11: ResultOperatorFunction<UnwrapPromise<J>, ResultError, K, ResultError>
+    ): PipeResult<K, [A, B, C, D, E, F, G, H, I, J, K]>;
+    pipe<A, B, C, D, E, F, G, H, I, J, K, L>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>,
+        op10: ResultOperatorFunction<UnwrapPromise<I>, ResultError, J, ResultError>,
+        op11: ResultOperatorFunction<UnwrapPromise<J>, ResultError, K, ResultError>,
+        op12: ResultOperatorFunction<UnwrapPromise<K>, ResultError, L, ResultError>
+    ): PipeResult<L, [A, B, C, D, E, F, G, H, I, J, K, L]>;
+    pipe<A, B, C, D, E, F, G, H, I, J, K, L, M>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>,
+        op10: ResultOperatorFunction<UnwrapPromise<I>, ResultError, J, ResultError>,
+        op11: ResultOperatorFunction<UnwrapPromise<J>, ResultError, K, ResultError>,
+        op12: ResultOperatorFunction<UnwrapPromise<K>, ResultError, L, ResultError>,
+        op13: ResultOperatorFunction<UnwrapPromise<L>, ResultError, M, ResultError>
+    ): PipeResult<M, [A, B, C, D, E, F, G, H, I, J, K, L, M]>;
+    pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>,
+        op10: ResultOperatorFunction<UnwrapPromise<I>, ResultError, J, ResultError>,
+        op11: ResultOperatorFunction<UnwrapPromise<J>, ResultError, K, ResultError>,
+        op12: ResultOperatorFunction<UnwrapPromise<K>, ResultError, L, ResultError>,
+        op13: ResultOperatorFunction<UnwrapPromise<L>, ResultError, M, ResultError>,
+        op14: ResultOperatorFunction<UnwrapPromise<M>, ResultError, N, ResultError>
+    ): PipeResult<N, [A, B, C, D, E, F, G, H, I, J, K, L, M, N]>;
+    pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
+        op1: ResultOperatorFunction<Value, ResultError, A, ResultError>,
+        op2: ResultOperatorFunction<UnwrapPromise<A>, ResultError, B, ResultError>,
+        op3: ResultOperatorFunction<UnwrapPromise<B>, ResultError, C, ResultError>,
+        op4: ResultOperatorFunction<UnwrapPromise<C>, ResultError, D, ResultError>,
+        op5: ResultOperatorFunction<UnwrapPromise<D>, ResultError, E, ResultError>,
+        op6: ResultOperatorFunction<UnwrapPromise<E>, ResultError, F, ResultError>,
+        op7: ResultOperatorFunction<UnwrapPromise<F>, ResultError, G, ResultError>,
+        op8: ResultOperatorFunction<UnwrapPromise<G>, ResultError, H, ResultError>,
+        op9: ResultOperatorFunction<UnwrapPromise<H>, ResultError, I, ResultError>,
+        op10: ResultOperatorFunction<UnwrapPromise<I>, ResultError, J, ResultError>,
+        op11: ResultOperatorFunction<UnwrapPromise<J>, ResultError, K, ResultError>,
+        op12: ResultOperatorFunction<UnwrapPromise<K>, ResultError, L, ResultError>,
+        op13: ResultOperatorFunction<UnwrapPromise<L>, ResultError, M, ResultError>,
+        op14: ResultOperatorFunction<UnwrapPromise<M>, ResultError, N, ResultError>,
+        op15: ResultOperatorFunction<UnwrapPromise<N>, ResultError, O, ResultError>
+    ): PipeResult<O, [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]>;
 }
+
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+type UnwrapPromiseInResult<T> = T extends Promise<Result<infer U, ResultError>> ? U : T;
+
+type AnyPromise<Types extends any[]> = Types extends [infer First, ...infer Rest]
+    ? First extends Promise<any>
+        ? true
+        : AnyPromise<Rest>
+    : false;
+
+type PipeResult<Output, All extends any[]> = AnyPromise<All> extends true
+    ? Promise<Result<UnwrapPromise<Output>, ResultError>>
+    : Result<Output, ResultError>;

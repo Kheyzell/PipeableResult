@@ -33,10 +33,14 @@ export const map = <Value, Err extends ResultError, A>(
  * const handledResult = result.pipe(mapErr(e => new AnotherError(e.name, 'Handled: ' + e.message)));
  */
 export const mapErr = <Value, Err extends ResultError, B extends ResultError>(
-    fn: (arg: Err) => B
+    fn: (arg: Err) => B | Promise<B>
 ) => (result: Result<Value, Err>): Result<Value, B> => {
     if (result.isFailure()) {
-        return fail(fn(result.error()!)) as Result<Value, B>;
+        const fnRes = fn(result.error()!);
+        if (fnRes instanceof Promise) {
+            return fnRes.then(err => fail(err)) as any as Result<Value, B>;
+        }
+        return fail(fnRes) as Result<Value, B>;
     }
     return ResultImpl.succeed(result.value());
 };
@@ -78,7 +82,7 @@ export const chain = <Value, Err extends ResultError, A>(
  * const handledResult = result.pipe(chainErr(e => succeed([]))); // Converts the failure to success
  */
 export const chainErr = <Value, Err extends ResultError, B extends ResultError>(
-    fn: (arg: Err) => (Result<Value, B> | Value | B)
+    fn: (arg: Err) => (Result<Value, B> | Value | B | Promise<Result<Value, B> | Value | B>)
 ) => (result: Result<Value, Err>): Result<Value, B> => {
     if (result.isFailure()) {
         const fnValue = fn(result.error()!);
