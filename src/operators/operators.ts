@@ -1,7 +1,7 @@
-import { succeed, fail } from "./factories";
-import { ResultError, ResultImpl } from "./result.implementation";
-import { Result } from "./result.interface";
-import { isResult, isError } from "./type-guards";
+import { succeed, fail } from "../factories";
+import { ResultError, ResultImpl } from "../result.implementation";
+import { Result } from "../result.interface";
+import { isResult, isError } from "../type-guards";
 
 /** Operators **/
 

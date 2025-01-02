@@ -4,6 +4,16 @@
         "rootDir": "./",
         "sourceMap": true,
         "moduleResolution": "node",
-        "target": "es5"
-    }
+        "target": "ES6",
+        "declaration": true,
+        "declarationDir": "./out",
+        "module": "CommonJS",
+        "strict": true,
+        "esModuleInterop": true,
+        "paths": {
+            "pipeable-result/operators": ["./src/operators"],
+            "pipeable-result/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*"]
 }

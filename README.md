@@ -14,9 +14,10 @@ The pipe of operators allows to compose processes on Results
 
 ## Table of Contents
 
+* [Installation](#installation)
 * [Usage](#usage)
   * [Purpose](#purpose)
-  * [Some example](#some-example)
+  * [Some examples](#some-examples)
 * [Creating Results](#creating-results)
   * [succeed Function](#succeed-function)
   * [fail Function](#fail-function)
@@ -37,6 +38,13 @@ The pipe of operators allows to compose processes on Results
   * [catchErr](#catcherr)
   * [match](#match)
 * [Error Handling](#error-handling)
+
+## Installation
+
+### Via npm
+```bash
+npm install pipeable-result
+```
 
 ## Usage
 
