@@ -11,7 +11,7 @@ describe("Result Factories", () => {
             // Assert
             expect(result).toBeInstanceOf(ResultImpl);
             expect(result.isSuccess()).toBe(true);
-            expect(result.value()).toBeUndefined();
+            expect(result.value()).toBeNull();
         });
 
         it("should create a success result with the provided value", () => {

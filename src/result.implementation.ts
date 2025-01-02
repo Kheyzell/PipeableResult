@@ -5,7 +5,7 @@ import { succeed } from './factories';
 /* Result implementation */
 
 export class ResultImpl<Value, Err extends ResultError> implements Result<Value, Err> {
-    private _value: Value;
+    private _value: Value = null!;
     private _err: Err | null = null;
 
     private _isFailure = false;
