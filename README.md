@@ -233,7 +233,7 @@ function checkDocumentHasBeenValidated(document: Document): boolean {
 const userId = 'user123';
 
 (await getUserAsync(userId)).pipe(
-    map(user => getDocumentsAsync(user.documents)),
+    map(user => getDocumentsAsync(user.documentIds)),
     map(documents => documents.filter(checkDocumentHasBeenValidated)),
     tap(validDocuments => console.log(`All valid document found: ${validDocuments.map(doc => doc.name).join(', ')}`)),
     catchErr(err => console.error(err))

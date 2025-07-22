@@ -1,37 +1,32 @@
-import { ResultError, ResultImpl } from "./result.implementation";
-import { Result } from "./result.interface";
-import { isError } from "./type-guards";
+import { ResultImpl } from "./result.implementation";
+import { Result, ResultError } from "./result.interface";
 
 /** Factories **/
 
 /**
- * Creates a `Success` `Result` with the provided value.
+ * Creates a `Success` `Result`.
+ * Contains a value if provided.
  *
  * @example
- * const result = succeed(5);
+ * const result = succeed();
+ * // ... or
+ * const countResult = succeed(5);
  */
-export function succeed(): Result<any, any>;
-export function succeed<O>(arg: O): Result<O, any>;
-export function succeed<O>(arg?: O): Result<O | undefined, any> {
-  return ResultImpl.succeed(arg);
+export function succeed(): Result<void, never>;
+export function succeed<Value>(value: Value): Result<Value, never>;
+export function succeed<Value>(value?: Value): Result<Value | void, never> {
+  return ResultImpl.succeed(value);
 }
 
 /**
- * Creates a `Failure` `Result` with the provided error or error name and message.
+ * Creates a `Failure` `Result` with the provided error.
+ * It is recommended to use a specific type for the error in the same of a `ResultError`.
  *
  * @example
- * const result = fail("Error", "Something went wrong");
- * // OR ...
- * const error = new ResultError('Error', 'Something went wrong');
- * const result = fail(error);
+ * type HttpNotFoundError = { [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: string };
+ * ...
+ * const result = fail<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });*
  */
-export function fail<E extends ResultError>(name: string, message?: string): Result<any, E>;
-export function fail<E extends ResultError>(arg: E): Result<any, E>;
-export function fail<E extends ResultError>(...args: [string, string?] | [E]): Result<any, E> {
-  if (isError<E>(args[0])) {
-    return ResultImpl.fail(args[0]);
-  }
-
-  const [name, message] = args;
-  return ResultImpl.fail(new ResultError(name, message ?? "") as E);
+export function fail<E extends ResultError, Value = never>(error: E): Result<Value, E> {
+  return ResultImpl.fail(error);
 }

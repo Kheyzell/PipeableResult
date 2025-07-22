@@ -1,8 +1,9 @@
 import { fail, succeed } from "../../src/factories";
 import { map } from "../../src/operators";
-import { ResultError } from "../../src/result.implementation";
+import { ResultError } from "../../src/result.interface";
+import { ErrorTag } from "../../src/types";
 
-describe("map function", () => {
+describe("map operator", () => {
 
     it("should apply the function to a successful Result and return a new Success", () => {
         // Arrange
@@ -18,8 +19,8 @@ describe("map function", () => {
 
     it("should return the original Failure if the Result is a failure", () => {
         // Arrange
-        const error = new ResultError("TestError", "An error occurred");
-        const result = fail(error);
+        const error: ResultError = { [ErrorTag]: "TestError", message: "An error occurred" };
+        const result = fail<ResultError, number>(error);
 
         // Act
         const mappedResult = map((x: number) => x * 2)(result);

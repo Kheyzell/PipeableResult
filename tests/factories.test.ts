@@ -1,5 +1,7 @@
 import { fail, succeed } from '../src/factories';
-import { ResultImpl, ResultError } from '../src/result.implementation';
+import { ResultImpl } from '../src/result.implementation';
+import { ResultError } from '../src/result.interface';
+import { ErrorTag } from '../src/types';
 
 describe("Result Factories", () => {
 
@@ -28,7 +30,7 @@ describe("Result Factories", () => {
     describe("fail factory function", () => {
         it("should create a failure result with the provided error", () => {
             // Arrange
-            const error = new ResultError("TestError", "Something went wrong");
+            const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
             const result = fail(error);
