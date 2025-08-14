@@ -1,7 +1,7 @@
 import { fail, succeed } from "./factories";
 import { AnyResultOrAsync, PipeResult, Result, ResultError, ResultOrAsync, UnwrapResultError, UnwrapResultValue } from "./result.interface";
 import { isError } from "./type-guards";
-import { ErrorCaseReturns, ErrorCases, ErrorTag, MatchCases, MatchCasesReturns, ResultOperator } from "./types";
+import { ErrorCaseReturns, ErrorCases, ErrorTag, MatchCases, MatchCasesReturns, MaybeAsync, ResultOperator } from "./types";
 
 /* Result implementation */
 
@@ -79,9 +79,9 @@ export class ResultImpl<Value, Err extends ResultError> implements Result<Value,
         return handleErrorCase(error, cases);
     }
 
-    matchErrors<Cases extends ErrorCases<Err, any>>(errorCases: Cases): this | ErrorCaseReturns<Cases> {
+    matchErrors<Cases extends ErrorCases<Err, any>>(errorCases: Cases): Value | ErrorCaseReturns<Cases, MaybeAsync<any>> {
         if (this.isSuccess()) {
-            return this;
+            return this.value();
         }
 
         const error = this.error()!;
@@ -345,37 +345,31 @@ function pipeFromArray<Input, Output, ErrInput extends ResultError, ErrOutput ex
         return identity as ResultOperator<Input, ErrInput, ResultOrAsync<Output, ErrOutput>>;
     }
 
-    return function piped(input: Result<Input, ErrInput>): ResultOrAsync<Output, ErrOutput> {
-        return operators.reduce((prev: any, op: ResultOperator<Input, ErrInput, AnyResultOrAsync>) => {
-            const res = applyOperator(op, prev);
+    return function piped(input: ResultOrAsync<Input, ErrInput>): ResultOrAsync<Output, ErrOutput> {
+        return operators.reduce<ResultOrAsync<Output, ErrOutput>>((prev: ResultOrAsync<any, ResultError>, operator: ResultOperator<any, any, AnyResultOrAsync>) => {
+            const res = prev instanceof Promise
+                ? prev.then(v => operator(v))
+                : operator(prev);
 
             if (res instanceof Promise) {
-                return res.then(resV => unwrapPromiseInResult(resV));
+                return res.then(resV => unwrapPromiseInResult(resV) as Result<Output, ErrOutput>);
             } else {
-                return unwrapPromiseInResult(res);
+                return unwrapPromiseInResult(res) as Result<Output, ErrOutput>;
             }
         }, input as any);
     };
 }
 
-function applyOperator<Input, Output, ErrInput extends ResultError, ErrOutput extends ResultError>(fn: ResultOperator<Input, ErrInput, ResultOrAsync<Output, ErrOutput>>, input: any): ResultOrAsync<Output, ErrOutput> {
-    if (input instanceof Promise) {
-        return input.then(v => fn(v));
-    } else {
-        return fn(input);
-    }
-}
-
-function unwrapPromiseInResult<T>(result: Result<T, ResultError>): Result<T, ResultError> | Promise<Result<T, ResultError>> {
+function unwrapPromiseInResult<Value, Err extends ResultError>(result: Result<Value, Err>): ResultOrAsync<Value, Err> {
     if (result.isSuccess() && result.value() instanceof Promise) {
-        return (result.value() as Promise<T | Result<T, ResultError>>).then(value => {
+        return (result.value() as Promise<Value | Result<Value, Err>>).then(value => {
             if (value instanceof ResultImpl) {
                 return value;
             }
             return succeed(value);
         }) as any;
     } else if (result.isFailure() && result.error() instanceof Promise) {
-        return (result.error() as any as Promise<ResultError | Result<T, ResultError>>).then(error => {
+        return (result.error() as any as Promise<Err | Result<Value, Err>>).then(error => {
             if (error instanceof ResultImpl) {
                 return error;
             } else if (isError(error)) {

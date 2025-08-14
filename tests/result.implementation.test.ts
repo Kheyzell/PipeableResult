@@ -2,7 +2,7 @@ import { fail, succeed } from '../src/factories';
 import { chain, chainErr, map, mapErr } from '../src/operators';
 import { ResultImpl } from '../src/result.implementation';
 import { Result, ResultError } from '../src/result.interface';
-import { ErrorCases, ErrorTag, ResultOperatorFunction } from '../src/types';
+import { ErrorCases, ErrorTag, ResultOperator } from '../src/types';
 
 describe("ResultImpl", () => {
 
@@ -326,15 +326,15 @@ describe("ResultImpl", () => {
     });
 
     describe("pipe method", () => {
-        const toUpperCase: ResultOperatorFunction<string, ResultError, string, ResultError> = (result) => {
+        const toUpperCase: ResultOperator<string, ResultError, Result<string, ResultError>> = (result) => {
             return result.isSuccess() ? ResultImpl.succeed(result.value().toUpperCase()) : result;
         };
 
-        const addExclamation: ResultOperatorFunction<string, ResultError, string, ResultError> = (result) => {
+        const addExclamation: ResultOperator<string, ResultError, Result<string, ResultError>> = (result) => {
             return result.isSuccess() ? ResultImpl.succeed(result.value() + "!") : result;
         };
 
-        const addInterrogation: ResultOperatorFunction<string, ResultError, string, ResultError> = (result) => {
+        const addInterrogation: ResultOperator<string, ResultError, Result<string, ResultError>> = (result) => {
             return result.isSuccess() ? ResultImpl.succeed(result.value() + "?") : result;
         };
 
@@ -375,7 +375,7 @@ describe("ResultImpl", () => {
             const error: ResultError = { [ErrorTag]: "TestError", message: "Failed process" };
 
             // Act
-            const result = await ResultImpl.fail<ResultError>(error).pipe(
+            const result = await fail<ResultError>(error).pipe(
                 mapErr(async x => {
                     await delay({ ms: 1 });
                     return { [ErrorTag]: "MapError", message: `${x.message}: Mapping error` };

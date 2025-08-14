@@ -8,9 +8,9 @@ import { Result, ResultError } from "./result.interface";
  * Contains a value if provided.
  *
  * @example
- * const result = succeed();
- * // ... or
- * const countResult = succeed(5);
+ * const result1 = succeed(5);             // Successful Result with value 5
+ * const result2 = succeed("Success!");    // Successful Result with value "Success!"
+ * const result3 = succeed();              // Successful Result with no value
  */
 export function succeed(): Result<void, never>;
 export function succeed<Value>(value: Value): Result<Value, never>;

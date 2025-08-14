@@ -1,4 +1,4 @@
-import { AnyPromise, ErrorCaseReturns, ErrorCases, ErrorTag, MatchCases, MatchCasesReturns, ResultOperator, UnwrapPromise } from './types';
+import { AnyPromise, ErrorCaseReturns, ErrorCases, ErrorTag, MatchCases, MatchCasesReturns, MaybeAsync, ResultOperator, UnwrapPromise } from './types';
 
 /* Result interface */
 
@@ -14,19 +14,30 @@ export interface Result<Value, Err extends ResultError = ResultError> {
     isFailure(): boolean;
 
     /**
-     * Safely get the value inside the Result by handling the error case.
-     *
-     * @example
-     * const result = unsafeCalculation(); // some Result<number, ResultError> to handle
-     * const value = result.unwrap(error => { // safely unwrap the value
-     *     if (error[ErrorTag] === "DivisionByZeroError") {
-     *         return Infinity; // handle a specific error case
-     *     }
+     * Safely get the value inside the Result by providing a matching structure for handling the error cases.
      * 
-     *     return 0; // handle all other error cases
+     * @example
+     * const result = unsafeCalculation();
+     * const value = result.unwrap({
+     *   HttpResponseError: (error) => 0,
+     *   NetworkError: (error) => doMoreCalculation(),
      * });
+     *
+     * @description
+     * Can also be used to unwrap the value by providing a single handler for all errors.
+     * 
+     * @example
+     * const result = unsafeCalculation();
+     * const value = result.unwrap(error => 0);
      */
     unwrap(errorCases: ErrorCases<Err, Value>): Value;
+    /**
+     * Safely get the value inside the Result by providing a single handler for all errors.
+     * 
+     * * @example
+     * const result = unsafeCalculation();
+     * const value = result.unwrap(error => 0);
+     */
     unwrap(errorHandler: (error: Err) => Value): Value;
 
     /**
@@ -53,22 +64,47 @@ export interface Result<Value, Err extends ResultError = ResultError> {
     error(): Err | null;
 
     /**
-     * Provides a pattern matching like structure on the `Result` `Success` case
+     * Provides a matching structure on the `Result` `Success` case
      * and all `Failure` cases (meaning all possible errors).
      * 
      * @example
      * const result: Result<number, ErrorType1 | ErrorType2> = unsafeCalculation();
      * const value = result.match({
-     *     Success: (value: number) => value,
-     *     ErrorType1: (error: ErrorType1) => 0,
+     *     Success: (value: number) => value % 2,
+     *     ErrorType1: (error: ErrorType1) => "A_VALUE",
      *     ErrorType2: (error: ErrorType2) => someOtherCalculation(error),
+     * });
+     * 
+     * @description
+     * You might want to force a specific return type,
+     * in which case specify the return type you expect as follows:
+     * 
+     * @example
+     * const result: Result<number, NetworkError | HttpResponseError> = succeed(5);
+     * const value = result.match<string>({ // => enforce a string return type
+     *     Success: (value: number) => (value % 2).toString(), // => forced to return a string
+     *     NetworkError: (error) => "A_VALUE",
+     *     HttpResponseError: (error) => someOtherCalculation(error),
      * });
      */
     match<Cases extends MatchCases<Value, Err, any>>(cases: Cases): MatchCasesReturns<Cases>;
+    /**
+     * Provides a matching structure on the `Result` `Success` case
+     * and all `Failure` cases (meaning all possible errors).
+     * Forces a specific return type on each cases specified by the generic type of the operator.
+     * 
+     * @example
+     * const result: Result<number, NetworkError | HttpResponseError> = succeed(5);
+     * const value = result.match<string>({ // => enforce a string return type
+     *     Success: (value: number) => (value % 2).toString(), // => forced to return a string
+     *     NetworkError: (error) => "A_VALUE",
+     *     HttpResponseError: (error) => someOtherCalculation(error),
+     * });
+     */
     match<O>(cases: MatchCases<Value, Err, O>): O;
     
     /**
-    * Provides a pattern matching like structure on all `Failure` cases
+    * Provides a matching structure on all `Failure` cases
     * (meaning all possible errors).
     *
     * @example
@@ -78,7 +114,7 @@ export interface Result<Value, Err extends ResultError = ResultError> {
     *     ErrorType2: (error: ErrorType2) => someOtherCalculation(error),
     * });
     */
-   matchErrors<Cases extends ErrorCases<Err, any>>(errorCases: Cases): this | ErrorCaseReturns<Cases>;
+   matchErrors<Cases extends ErrorCases<Err, any>>(errorCases: Cases): Value | ErrorCaseReturns<Cases, MaybeAsync<any>>;
 
     /**
      * Chains multiple operations that take a `Result` and return a new `Result`. The `pipe`

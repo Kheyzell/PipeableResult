@@ -1,7 +1,7 @@
-import { fail, succeed } from "../src/factories";
-import { catchErr, chain, map, tap } from "../src/operators";
-import { Result } from "../src/result.interface";
-import { ErrorTag } from "../src/types";
+import { fail, succeed } from '../src/factories';
+import { catchErr, chain, map, tap } from '../src/operators/operators';
+import { Result } from '../src/result.interface';
+import { ErrorTag } from '../src/types';
 
 describe("Examples", () => {
     describe("More complex example", () => {
@@ -23,6 +23,7 @@ describe("Examples", () => {
       type NetworkError = { [ErrorTag]: "NetworkError"; message: string };
 
       it("should handle a successful flow", async () => {
+        // Arrange
         async function getUserAsync(_userId: string): Promise<Result<User, NetworkError | HttpResponseError>> {
           return Promise.resolve(succeed<User>({ name: "UserName", documentIds: ["1", "2", "3"] }));
         }
@@ -41,6 +42,7 @@ describe("Examples", () => {
   
         const userId = "user123";
         
+        // Act
         const result = await (await getUserAsync(userId)).pipe(
           chain((user) => getDocumentsAsync(user.documentIds)),
           map((documents) => documents.filter(checkDocumentHasBeenValidated)),
@@ -48,6 +50,7 @@ describe("Examples", () => {
           catchErr((err) => logError(err)),
         );
   
+        // Assert
         expect(result.isSuccess()).toBe(true);
         expect(result.value()).toEqual([{ name: "Document 1", status: "VALIDATED" }, { name: "Document 3", status: "VALIDATED" }]);
   
@@ -58,6 +61,7 @@ describe("Examples", () => {
       });
   
       it("should handle an error", async () => {
+        // Arrange
         async function getUserAsync(_userId: string): Promise<Result<User, NetworkError | HttpResponseError>> {
           return Promise.resolve(succeed<User>({ name: "UserName", documentIds: ["1", "2", "3"] }));
         }
@@ -73,6 +77,7 @@ describe("Examples", () => {
   
         const userId = "user123";
         
+        // Act
         const result = await (await getUserAsync(userId)).pipe(
           chain((user) => getDocumentsAsync(user.documentIds)),
           map((documents) => documents.filter(checkDocumentHasBeenValidated)),
@@ -80,6 +85,7 @@ describe("Examples", () => {
           catchErr((err) => logError(err)),
         );
   
+        // Assert
         expect(result.isFailure()).toBe(true);
         expect(result.error()).toEqual({ [ErrorTag]: "HttpResponseError", status: 500 });
 

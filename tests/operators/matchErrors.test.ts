@@ -46,6 +46,52 @@ describe("matchErrors operator", () => {
         expect(matched.value()).toBe("-1");
     });
 
+    it("should handle an asynchronous flow and return the asynchronous case", async () => {
+        // Arrange
+        type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+        type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+
+        const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
+        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const cases = {
+            ErrorType1: (_err: ErrorType1) => succeed(7),
+            ErrorType2: (_err: ErrorType2) => Promise.resolve(succeed("-1")),
+        };
+
+        // Act
+        const matchedPromise = result.pipe(matchErrors(cases));
+
+        // Assert
+        expect(matchedPromise).toBeInstanceOf(Promise);
+        
+        const matched = await matchedPromise;
+        expect(matched.isSuccess()).toBe(true);
+        expect(matched.value()).toBe("-1");
+    });
+    
+    it("should handle an asynchronous flow and return the synchronous case as a Promise", async () => {
+        // Arrange
+        type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+        type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+
+        const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
+        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const cases = {
+            ErrorType1: (_err: ErrorType1) => succeed(7),
+            ErrorType2: (_err: ErrorType2) => Promise.resolve(succeed("-1")),
+        };
+
+        // Act
+        const matchedPromise = result.pipe(matchErrors(cases));
+
+        // Assert
+        expect(matchedPromise).not.toBeInstanceOf(Promise);
+        
+        const matched = await matchedPromise;
+        expect(matched.isSuccess()).toBe(true);
+        expect(matched.value()).toBe(7);
+    });
+
     it("should throw if no matching case is provided", () => {
         // Arrange
         const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };

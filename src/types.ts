@@ -4,16 +4,16 @@ import { Result, ResultError, ResultOrAsync } from './result.interface';
 
 /* Utils */
 
-export type ResultOperatorFunction<InputValue, InputErr extends ResultError, OutputValue, OutputErr extends ResultError> =
-    (r: Result<UnwrapPromise<InputValue>, InputErr>) => ResultOrAsync<OutputValue, OutputErr>;
-
 export type ResultOperator<InputValue, InputErr extends ResultError, R extends ResultOrAsync<any, ResultError>> =
     (r: Result<InputValue, InputErr>) => R
 
 export type OneOf<T extends { [key: string]: any }> = T[keyof T];
 
+/** Test wether at least one type of a union is a Promise */
+type IsPromise<T> = Extract<T, Promise<any>> extends never ? false : true;
+
 export type AnyPromise<Types extends any[]> = Types extends [infer First, ...infer Rest]
-    ? First extends Promise<any>
+    ? IsPromise<First> extends true
         ? true
         : AnyPromise<Rest>
     : false;
@@ -35,7 +35,7 @@ export type ErrorCases<E extends ResultError, O> = {
     [K in E[typeof ErrorTag]]: (error: Extract<E, { [ErrorTag]: K }>) => O;
 };
 
-export type ErrorCaseReturns<T extends ErrorCases<any, any>> = ReturnType<
+export type ErrorCaseReturns<T extends ErrorCases<any, O>, O = any> = ReturnType<
     ValueOf<{ [K in keyof T]: T[K]; }>
 >;
 
