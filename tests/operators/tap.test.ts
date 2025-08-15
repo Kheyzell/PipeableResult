@@ -1,4 +1,4 @@
-import { fail, succeed } from "../../src/factories";
+import { defect, succeed } from "../../src/factories";
 import { tap } from "../../src/operators";
 import { ResultError } from "../../src/result.interface";
 import { ErrorTag } from "../../src/types";
@@ -24,7 +24,7 @@ describe("tap operator", () => {
         // Arrange
         const sideEffect = jest.fn();
         const error: ResultError = { [ErrorTag]: "Error", message: "Operation failed" };
-        const result = fail(error);
+        const result = defect(error);
 
         // Act
         const tappedResult = tap(sideEffect)(result);

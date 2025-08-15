@@ -1,4 +1,4 @@
-import { fail, succeed } from "../../src/factories";
+import { defect, succeed } from "../../src/factories";
 import { chain } from "../../src/operators";
 import { Result, ResultError } from "../../src/result.interface";
 import { ErrorTag } from "../../src/types";
@@ -24,7 +24,7 @@ describe("chain operator", () => {
     
             // Act
             const error: ResultError = { [ErrorTag]: "NewError", message: "New error message" };
-            const chainedResult = chain(() => fail(error))(result);
+            const chainedResult = chain(() => defect(error))(result);
     
             // Assert
             expect(chainedResult.isFailure()).toBe(true);
@@ -36,7 +36,7 @@ describe("chain operator", () => {
         it("should return the original Failure if the Result is a failure", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "TestError", message: "Original error" };
-            const result: Result<number, ResultError> = fail(error);
+            const result: Result<number, ResultError> = defect(error);
     
             // Act
             const chainedResult = chain((x: number) => succeed(x * 2))(result);

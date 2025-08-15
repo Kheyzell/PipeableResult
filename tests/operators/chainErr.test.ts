@@ -1,4 +1,4 @@
-import { fail, succeed } from "../../src/factories";
+import { defect, succeed } from "../../src/factories";
 import { chainErr } from "../../src/operators";
 import { Result, ResultError } from "../../src/result.interface";
 import { ErrorTag } from "../../src/types";
@@ -9,7 +9,7 @@ describe("chainErr operator", () => {
         it("should apply the function and return a new Success", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "TestError", message: "Something went wrong" };
-            const result = fail<ResultError, boolean>(error);
+            const result = defect<ResultError, boolean>(error);
             
             // Act
             const chainedResult = chainErr(() => succeed(true))(result);
@@ -22,12 +22,12 @@ describe("chainErr operator", () => {
         it("should apply the function and return a new Failure", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "TestError", message: "Something went wrong" };
-            const result = fail(error);
+            const result = defect(error);
 
             const anotherError: ResultError = { [ErrorTag]: "NewError", message: "New error message" };
     
             // Act
-            const chainedResult = chainErr(() => fail(anotherError))(result);
+            const chainedResult = chainErr(() => defect(anotherError))(result);
     
             // Assert
             expect(chainedResult.isFailure()).toBe(true);

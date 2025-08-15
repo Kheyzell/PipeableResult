@@ -1,4 +1,4 @@
-import { fail, succeed } from "./factories";
+import { defect, succeed } from "./factories";
 import { AnyResultOrAsync, PipeResult, Result, ResultError, ResultOrAsync, UnwrapResultError, UnwrapResultValue } from "./result.interface";
 import { isError } from "./type-guards";
 import { ErrorCaseReturns, ErrorCases, ErrorTag, MatchCases, MatchCasesReturns, MaybeAsync, ResultOperator } from "./types";
@@ -27,7 +27,7 @@ export class ResultImpl<Value, Err extends ResultError> implements Result<Value,
         return new ResultImpl(v);
     }
 
-    static fail<Err extends ResultError, Value = void>(e: Err): Result<Value, Err> {
+    static defect<Err extends ResultError, Value = void>(e: Err): Result<Value, Err> {
         return new ResultImpl(null as any, e);
     }
 
@@ -373,7 +373,7 @@ function unwrapPromiseInResult<Value, Err extends ResultError>(result: Result<Va
             if (error instanceof ResultImpl) {
                 return error;
             } else if (isError(error)) {
-                return fail(error);
+                return defect(error);
             }
         }) as any;
     }

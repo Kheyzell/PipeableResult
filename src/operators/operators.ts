@@ -1,4 +1,4 @@
-import { fail, succeed } from "../factories";
+import { defect, succeed } from "../factories";
 import { ResultImpl } from "../result.implementation";
 import {
   Result,
@@ -27,7 +27,7 @@ export function map<InputValue, Err extends ResultError, OutputValue>(
     if (result.isSuccess()) {
       return succeed(fn(result.value()));
     }
-    return fail(result.error()!);
+    return defect(result.error()!);
   };
 }
 
@@ -40,7 +40,7 @@ export function map<InputValue, Err extends ResultError, OutputValue>(
  * type UnknownError = { [ErrorTag]: "UnknownError" };
  * type UserAccountNotActivated = { [ErrorTag]: "UserAccountNotActivated" };
  * ...
- * const apiCallResult = fail<UnknownError>({ [ErrorTag]: "UnknownError" });
+ * const apiCallResult = defect<UnknownError>({ [ErrorTag]: "UnknownError" });
  * const result2 = apiCallResult.pipe(mapErr(e => ({ [ErrorTag]: "UserAccountNotActivated" }) as UserAccountNotActivated)); // Returns a `Failure` with this `UserAccountNotActivated` error
  */
 export function mapErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
@@ -56,9 +56,9 @@ export function mapErr<Value, ErrInput extends ResultError, ErrOutput extends Re
     if (result.isFailure()) {
       const fnRes = fn(result.error()!);
       if (fnRes instanceof Promise) {
-        return fnRes.then((err) => fail(err));
+        return fnRes.then((err) => defect(err));
       }
-      return fail(fnRes);
+      return defect(fnRes);
     }
     return ResultImpl.succeed(result.value());
   };
@@ -72,7 +72,7 @@ export function mapErr<Value, ErrInput extends ResultError, ErrOutput extends Re
  * const result = succeed(5);
  * const chainedResult = result.pipe(chain(x => {
  *     if (x < 0) { // if the value negative returns a `Failure`
- *         return fail({ [ErrorTag]: "NegativeNumberError" });
+ *         return defect({ [ErrorTag]: "NegativeNumberError" });
  *     }
  *     return succeed(x * 2); // Returns a `Success` with value 10
  * }));
@@ -92,7 +92,7 @@ export function chain<Input, ErrInput extends ResultError, Output, ErrOutput ext
     if (result.isSuccess()) {
       return fn(result.value());
     }
-    return ResultImpl.fail(result.error()!);
+    return ResultImpl.defect(result.error()!);
   };
 }
 
@@ -101,7 +101,7 @@ export function chain<Input, ErrInput extends ResultError, Output, ErrOutput ext
  * If the `Result` is a `Success`, it returns the original `Success`.
  *
  * @example
- * const result = fail({ [ErrorTag]: "UnknownError" });
+ * const result = defect({ [ErrorTag]: "UnknownError" });
  * const handledResult = result.pipe(chainErr(e => succeed([]))); // Converts the failure to success
  */
 export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
@@ -157,7 +157,7 @@ export function tap<Value, Err extends ResultError>(
  * Returns the original `Result` after the side effect.
  *
  * @example
- * const result = fail(new ResultError('Error', 'Task failed'));
+ * const result = defect(new ResultError('Error', 'Task failed'));
  * result.pipe(catchErr(err => console.error(err))); // Logs the error and returns the original `Result`
  */
 export function catchErr<Value, Err extends ResultError>(
@@ -209,7 +209,7 @@ export function match<Value, Err extends ResultError, Cases extends MatchCases<V
  *     matchErrors({
  *         ErrorType1: error => succeed(0),
  *         ErrorType2: error => succeed("VALUE_0"),
- *         ErrorType3: error => fail<ErrorType5>({ [ErrorTag]: "ErrorType4", message: `Error code ${error.code}` }),
+ *         ErrorType3: error => defect<ErrorType5>({ [ErrorTag]: "ErrorType4", message: `Error code ${error.code}` }),
  *     })
  * );
  */

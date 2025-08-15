@@ -1,4 +1,4 @@
-import { fail, succeed } from "../../src/factories";
+import { defect, succeed } from "../../src/factories";
 import { match } from "../../src/operators";
 import { matchErrors } from "../../src/operators/operators";
 import { ResultError } from "../../src/result.interface";
@@ -12,7 +12,7 @@ describe("matchErrors operator", () => {
         type ErrorType2 = { [ErrorTag]: "ErrorType2" }
 
         const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         const cases = {
             ErrorType1: (_err: ErrorType1) => succeed(7),
             ErrorType2: (_err: ErrorType2) => succeed("-1"),
@@ -32,7 +32,7 @@ describe("matchErrors operator", () => {
         type ErrorType2 = { [ErrorTag]: "ErrorType2" }
 
         const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         const cases = {
             ErrorType1: (_err: ErrorType1) => succeed(7),
             ErrorType2: (_err: ErrorType2) => succeed("-1"),
@@ -52,7 +52,7 @@ describe("matchErrors operator", () => {
         type ErrorType2 = { [ErrorTag]: "ErrorType2" }
 
         const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         const cases = {
             ErrorType1: (_err: ErrorType1) => succeed(7),
             ErrorType2: (_err: ErrorType2) => Promise.resolve(succeed("-1")),
@@ -75,7 +75,7 @@ describe("matchErrors operator", () => {
         type ErrorType2 = { [ErrorTag]: "ErrorType2" }
 
         const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         const cases = {
             ErrorType1: (_err: ErrorType1) => succeed(7),
             ErrorType2: (_err: ErrorType2) => Promise.resolve(succeed("-1")),
@@ -95,7 +95,7 @@ describe("matchErrors operator", () => {
     it("should throw if no matching case is provided", () => {
         // Arrange
         const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };
-        const result = fail(error);
+        const result = defect(error);
         const cases = {
             // Missing handler for "UnhandledType"
         } as any;

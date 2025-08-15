@@ -23,8 +23,8 @@ The pipe of operators allows to compose processes on Results
   * [Purpose](#purpose)
   * [Some examples](#some-examples)
 * [Creating Results](#creating-results)
-  * [succeed Function](#succeed-function)
-  * [fail Function](#fail-function)
+  * [succeed Factory](#succeed-factory)
+  * [defect Factory](#defect-factory)
 * [Interface](#interface)
   * [isSuccess](#issuccess)
   * [isFailure](#isfailure)
@@ -103,7 +103,7 @@ With `Result`
 ```typescript
 function divideBy(dividend: number, divisor: number) : Result<number> {
     if (divisor == 0) {
-        fail(new ResultError("DivisionByZero", "Cannot divide by zero."));
+        defect(new ResultError("DivisionByZero", "Cannot divide by zero."));
     }
 
     return succeed(dividend / divisor);
@@ -143,7 +143,7 @@ function readFile(path: string): Result<string> {
     try {
         return succeed(readFileSync(path));
     } catch (error) {
-        return fail(new ResultError("FileReading", `Failed to read file: ${error.message}`));
+        return defect(new ResultError("FileReading", `Failed to read file: ${error.message}`));
     }
 }
 
@@ -218,7 +218,7 @@ async function getData<T>(url: string): Promise<Result<T>> {
         const data = await response.json() as T;
         return succeed(data);
     } catch (error) {
-        return fail(new ResultError('FetchError', `Error fetching data: ${error}`));
+        return defect(new ResultError('FetchError', `Error fetching data: ${error}`));
     }
 }
 
@@ -250,9 +250,9 @@ const userId = 'user123';
 
 ## Creating Results
 
-The library offers two factory functions to create `Result` instances: `succeed` and `fail`.
+The library offers two factory functions to create `Result` instances: `succeed` and `defect`.
 
-### `succeed` Function
+### `succeed` Factory
 
 Creates a `Success`, a result containing optionnaly a value and no error.
 
@@ -264,18 +264,18 @@ const result2 = succeed("Success!");    // Successful Result with value "Success
 const result3 = succeed();              // Successful Result with no value
 ```
 
-### `fail` Function
+### `defect` Factory
 
 Creates a `Failure`, a result containing an error.
 
 > **Note**: the idiomatic way is to provide a specific type for a specific error so that an action can be performed depending on what went wrong.
 
 ```typescript
-import { fail, ResultError } from "pipeable-result";
+import { defect, ResultError } from "pipeable-result";
 
 type HttpNotFoundError = { [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: string };
 ...
-const result = fail<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });
+const result = defect<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });
 // => Result with an error of type HttpNotFoundError
 ```
 
@@ -328,7 +328,7 @@ Returns a string representation of the `Result`.
 
 ```typescript
 succeed("Hello").inspect(); // => `Success("Hello")`
-fail({ [ErrorTag]: "TestError", message: "Failed process", code: 40 })
+defect({ [ErrorTag]: "TestError", message: "Failed process", code: 40 })
     .inspect(); // => `Failure(TestError): { message: "Failed process", code: 40 }`
 ```
 
@@ -386,7 +386,7 @@ const result = succeed(5)
 Transforms a `Failure` result error and wraps it in a new `Failure`. If the `Result` is a `Success`, it returns the original `Success`.
 
 ```typescript
-const result = fail<SomeLowLevelError>({ [ErrorTag]: "SomeLowLevelError", code: 16 })
+const result = defect<SomeLowLevelError>({ [ErrorTag]: "SomeLowLevelError", code: 16 })
     .pipe(
         mapErr((e) => ({ [ErrorTag]: "SomeOtherError", message: `An error occurred during operation with code ${e.code}` }) as SomeOtherError)
     ); // Result with the new error
@@ -406,7 +406,7 @@ const result = succeed(5)
 Chains an operation on a `Failure` result that returns a new `Result`. If the `Result` is a `Success`, it returns the original `Success`.
 
 ```typescript
-const result = fail(new ResultError("Error", "Something went wrong"))
+const result = defect(new ResultError("Error", "Something went wrong"))
     .pipe(chainErr(() => succeed("Default value")));
 ```
 
@@ -425,7 +425,7 @@ succeed("Task completed").pipe(
 Performs a side-effect on a `Failure` result error. Returns the original `Result`.
 
 ```typescript
-fail<TaskFailedError>({ [ErrorTag]: "TaskFailedError" }).pipe(
+defect<TaskFailedError>({ [ErrorTag]: "TaskFailedError" }).pipe(
     catchErr((err) => console.error("Failure:", err.message)) // Logs "Failure: Task failed"
 );
 ```
@@ -463,7 +463,7 @@ interface AnotherError extends ResultError {
 }
 ```
 
-And then create a `Failure` using the `fail` factory
+And then create a `Failure` using the `defect` factory
 ```typescript
-const result = fail<ExampleError>({ [ErrorTag]: "ExampleError", someKey: 0 });
+const result = defect<ExampleError>({ [ErrorTag]: "ExampleError", someKey: 0 });
 ```

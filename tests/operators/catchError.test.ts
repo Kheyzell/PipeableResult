@@ -1,4 +1,4 @@
-import { fail, succeed } from "../../src/factories";
+import { defect, succeed } from "../../src/factories";
 import { catchErr } from "../../src/operators";
 import { ResultError } from "../../src/result.interface";
 import { ErrorTag } from "../../src/types";
@@ -9,7 +9,7 @@ describe("catchErr operator", () => {
         // Arrange
         const sideEffect = jest.fn();
         const error: ResultError = { [ErrorTag]: "TestError", message: "Task failed" };
-        const result = fail(error);
+        const result = defect(error);
 
         // Act
         const caughtResult = catchErr(sideEffect)(result);
