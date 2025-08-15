@@ -1,4 +1,4 @@
-import { fail, succeed } from "../../src/factories";
+import { defect, succeed } from "../../src/factories";
 import { match } from "../../src/operators";
 import { Result, ResultError, ResultOrAsync } from "../../src/result.interface";
 import { ErrorTag, MatchCases } from "../../src/types";
@@ -17,7 +17,7 @@ describe("match operator", () => {
         const cases: MatchCases<number, ErrorType1 | ErrorType2, Result<number | string, ErrorType3>> = {
             Success: value => succeed(value * 2),
             ErrorType1: _error => succeed("ok"),
-            ErrorType2: _error => fail<ErrorType3>({ [ErrorTag]: "ErrorType3" }),
+            ErrorType2: _error => defect<ErrorType3>({ [ErrorTag]: "ErrorType3" }),
         };
 
         // Act
@@ -36,12 +36,12 @@ describe("match operator", () => {
         type ErrorType3 = { [ErrorTag]: "ErrorType3" }
         
         const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         
         const cases: MatchCases<number, ErrorType1 | ErrorType2, Result<number | string, ErrorType3>> = {
             Success: _ => succeed(999),
             ErrorType1: _error => succeed("7"),
-            ErrorType2: _error => fail<ErrorType3>({ [ErrorTag]: "ErrorType3" }),
+            ErrorType2: _error => defect<ErrorType3>({ [ErrorTag]: "ErrorType3" }),
         };
 
         // Act
@@ -60,12 +60,12 @@ describe("match operator", () => {
         type ErrorType3 = { [ErrorTag]: "ErrorType3" }
         
         const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         
         const cases: MatchCases<number, ErrorType1 | ErrorType2, Result<number | string, ErrorType3>> = {
             Success: _ => succeed(999),
             ErrorType1: _error => succeed("7"),
-            ErrorType2: _error => fail<ErrorType3>({ [ErrorTag]: "ErrorType3" }),
+            ErrorType2: _error => defect<ErrorType3>({ [ErrorTag]: "ErrorType3" }),
         };
 
         // Act
@@ -88,7 +88,7 @@ describe("match operator", () => {
         const cases: MatchCases<number, ErrorType1 | ErrorType2, ResultOrAsync<number | string, ErrorType3>> = {
             Success: _ => Promise.resolve(succeed(999)),
             ErrorType1: _error => succeed("7"),
-            ErrorType2: _error => Promise.resolve(fail<ErrorType3>({ [ErrorTag]: "ErrorType3" })),
+            ErrorType2: _error => Promise.resolve(defect<ErrorType3>({ [ErrorTag]: "ErrorType3" })),
         };
 
         // Act
@@ -110,12 +110,12 @@ describe("match operator", () => {
         type ErrorType3 = { [ErrorTag]: "ErrorType3" }
         
         const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
-        const result = fail<ErrorType1 | ErrorType2, number>(error);
+        const result = defect<ErrorType1 | ErrorType2, number>(error);
         
         const cases: MatchCases<number, ErrorType1 | ErrorType2, ResultOrAsync<number | string, ErrorType3>> = {
             Success: _ => Promise.resolve(succeed(999)),
             ErrorType1: _error => succeed("7"),
-            ErrorType2: _error => Promise.resolve(fail<ErrorType3>({ [ErrorTag]: "ErrorType3" })),
+            ErrorType2: _error => Promise.resolve(defect<ErrorType3>({ [ErrorTag]: "ErrorType3" })),
         };
 
         // Act
@@ -132,7 +132,7 @@ describe("match operator", () => {
     it("should throw if no matching case is provided", () => {
         // Arrange
         const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };
-        const result = fail(error);
+        const result = defect(error);
         const cases = {
             Success: (_: number) => 1,
             // Missing handler for "UnhandledType"

@@ -47,7 +47,7 @@ export interface Result<Value, Err extends ResultError = ResultError> {
      *
      * @example
      * succeed("Hello").inspect(); // "Success(Hello)"
-     * fail({ [ErrorTag]: "TestError", message: "Failed process", code: 40 })
+     * defect({ [ErrorTag]: "TestError", message: "Failed process", code: 40 })
      *     .inspect(); // "Failure(TestError): { message: "Failed process", code: 40 }"
      */
     inspect(): string;

@@ -1,5 +1,9 @@
 # Changelogs
 
+### 0.4.1 15/08/2025
+
+- Renamed `fail` factory function to `defect` to avoid naming collision with popular testing solutions
+
 ## 0.4.0 - 15/08/2025
 
 - Introduction of matching structures to distinguish between `Success` case and all different types of `error` cases

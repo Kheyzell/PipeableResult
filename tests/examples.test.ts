@@ -1,4 +1,4 @@
-import { fail, succeed } from '../src/factories';
+import { defect, succeed } from '../src/factories';
 import { catchErr, chain, map, tap } from '../src/operators/operators';
 import { Result } from '../src/result.interface';
 import { ErrorTag } from '../src/types';
@@ -68,7 +68,7 @@ describe("Examples", () => {
   
         const getDocumentsAsync = jest.fn(
             (_documentIds: string[]) => Promise.resolve(
-                fail<HttpResponseError, Document[]>({ [ErrorTag]: "HttpResponseError", status: 500 })));
+                defect<HttpResponseError, Document[]>({ [ErrorTag]: "HttpResponseError", status: 500 })));
   
         const checkDocumentHasBeenValidated = jest.fn((document: Document) => document.status === "VALIDATED");
 

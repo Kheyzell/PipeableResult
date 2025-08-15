@@ -25,8 +25,8 @@ export function succeed<Value>(value?: Value): Result<Value | void, never> {
  * @example
  * type HttpNotFoundError = { [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: string };
  * ...
- * const result = fail<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });*
+ * const result = defect<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });*
  */
-export function fail<E extends ResultError, Value = never>(error: E): Result<Value, E> {
-  return ResultImpl.fail(error);
+export function defect<E extends ResultError, Value = never>(error: E): Result<Value, E> {
+  return ResultImpl.defect(error);
 }

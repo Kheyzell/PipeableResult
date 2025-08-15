@@ -1,4 +1,4 @@
-import { fail, succeed } from '../src/factories';
+import { defect, succeed } from '../src/factories';
 import { ResultImpl } from '../src/result.implementation';
 import { ResultError } from '../src/result.interface';
 import { ErrorTag } from '../src/types';
@@ -27,13 +27,13 @@ describe("Result Factories", () => {
         });
     });
 
-    describe("fail factory function", () => {
+    describe("defect factory function", () => {
         it("should create a failure result with the provided error", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = fail(error);
+            const result = defect(error);
 
             // Assert
             expect(result).toBeInstanceOf(ResultImpl);

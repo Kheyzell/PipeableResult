@@ -1,4 +1,4 @@
-import { fail, succeed } from '../src/factories';
+import { defect, succeed } from '../src/factories';
 import { chain, chainErr, map, mapErr } from '../src/operators';
 import { ResultImpl } from '../src/result.implementation';
 import { Result, ResultError } from '../src/result.interface';
@@ -28,13 +28,13 @@ describe("ResultImpl", () => {
         });
     });
 
-    describe("static fail method", () => {
+    describe("static defect method", () => {
         it("should create a failure result with an error", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<ResultError>(error);
+            const result = ResultImpl.defect<ResultError>(error);
 
             // Assert
             expect(result.isSuccess()).toBe(false);
@@ -57,7 +57,7 @@ describe("ResultImpl", () => {
             const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<ResultError>(error);
+            const result = ResultImpl.defect<ResultError>(error);
 
             // Assert
             expect(result.isFailure()).toBe(true);
@@ -78,7 +78,7 @@ describe("ResultImpl", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "TestError" };
 
-            const result = ResultImpl.fail<ResultError, number>(error);
+            const result = ResultImpl.defect<ResultError, number>(error);
             const errHandler = jest.fn(() => -1);
             
             // Act
@@ -95,7 +95,7 @@ describe("ResultImpl", () => {
             type Error2 = { [ErrorTag]: "Error2" };
             const error: Error1 | Error2 = { [ErrorTag]: "Error1" };
 
-            const result = ResultImpl.fail<Error1 | Error2, number>(error);
+            const result = ResultImpl.defect<Error1 | Error2, number>(error);
             const errHandler1 = jest.fn(() => -1);
             const errHandler2 = jest.fn(() => -2);
             const casesHandler: ErrorCases<Error1 | Error2, number> = {
@@ -118,7 +118,7 @@ describe("ResultImpl", () => {
             type Error2 = { [ErrorTag]: "Error2" };
             const error: Error1 | Error2 = { [ErrorTag]: "Error2" };
 
-            const result = ResultImpl.fail<Error1 | Error2, number>(error);
+            const result = ResultImpl.defect<Error1 | Error2, number>(error);
             const errHandler1 = jest.fn(() => -1);
             const errHandler2 = jest.fn(() => -2);
             const casesHandler: ErrorCases<Error1 | Error2, number> = {
@@ -150,7 +150,7 @@ describe("ResultImpl", () => {
             const error: ResultError = { [ErrorTag]: "TestError", message: "Failed process", code: 40, data: { isTest: true} };
 
             // Act
-            const inspectString = ResultImpl.fail<ResultError>(error).inspect();
+            const inspectString = ResultImpl.defect<ResultError>(error).inspect();
 
             // Assert
             expect(inspectString).toBe(`Failure(TestError): { message: "Failed process", code: 40, data: {"isTest":true} }`);
@@ -171,7 +171,7 @@ describe("ResultImpl", () => {
             const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<ResultError>(error);
+            const result = ResultImpl.defect<ResultError>(error);
 
             // Assert
             expect(() => result.value()).toThrow("Cannot get value from Failure");
@@ -184,7 +184,7 @@ describe("ResultImpl", () => {
             const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<ResultError>(error);
+            const result = ResultImpl.defect<ResultError>(error);
 
             // Assert
             expect(result.error()).toBe(error);
@@ -225,7 +225,7 @@ describe("ResultImpl", () => {
             type ErrorType2 = { [ErrorTag]: "ErrorType2" }
     
             const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
-            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const result = defect<ErrorType1 | ErrorType2, number>(error);
             const cases = {
                 Success: (_: number) => 999,
                 ErrorType1: (_err: ErrorType1) => 7,
@@ -245,7 +245,7 @@ describe("ResultImpl", () => {
             type ErrorType2 = { [ErrorTag]: "ErrorType2" }
     
             const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
-            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const result = defect<ErrorType1 | ErrorType2, number>(error);
             const cases = {
                 Success: (_: number) => 999,
                 ErrorType1: (_err: ErrorType1) => 7,
@@ -262,7 +262,7 @@ describe("ResultImpl", () => {
         it("should throw if no matching case is provided", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };
-            const result = fail(error);
+            const result = defect(error);
             const cases = {
                 Success: (_: number) => 1,
                 // Missing handler for "UnhandledType"
@@ -280,7 +280,7 @@ describe("ResultImpl", () => {
             type ErrorType2 = { [ErrorTag]: "ErrorType2" }
     
             const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
-            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const result = defect<ErrorType1 | ErrorType2, number>(error);
             const cases = {
                 ErrorType1: (_err: ErrorType1) => 7,
                 ErrorType2: (_err: ErrorType2) => -1,
@@ -299,7 +299,7 @@ describe("ResultImpl", () => {
             type ErrorType2 = { [ErrorTag]: "ErrorType2" }
     
             const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
-            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const result = defect<ErrorType1 | ErrorType2, number>(error);
             const cases = {
                 ErrorType1: (_err: ErrorType1) => 7,
                 ErrorType2: (_err: ErrorType2) => -1,
@@ -315,7 +315,7 @@ describe("ResultImpl", () => {
         it("should throw if no matching case is provided", () => {
             // Arrange
             const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };
-            const result = fail(error);
+            const result = defect(error);
             const cases = {
                 // Missing handler for "UnhandledType"
             } as any;
@@ -375,14 +375,14 @@ describe("ResultImpl", () => {
             const error: ResultError = { [ErrorTag]: "TestError", message: "Failed process" };
 
             // Act
-            const result = await fail<ResultError>(error).pipe(
+            const result = await defect<ResultError>(error).pipe(
                 mapErr(async x => {
                     await delay({ ms: 1 });
                     return { [ErrorTag]: "MapError", message: `${x.message}: Mapping error` };
                 }),
                 chainErr(async x => {
                     await delay({ ms: 1 });
-                    return fail({ [ErrorTag]: "ChainError", message: `${x.message}: Chaining error async` });
+                    return defect({ [ErrorTag]: "ChainError", message: `${x.message}: Chaining error async` });
                 }),
             );
 
