@@ -158,15 +158,15 @@ export function tap<Value, Err extends ResultError>(
  *
  * @example
  * const result = defect(new ResultError('Error', 'Task failed'));
- * result.pipe(catchErr(err => console.error(err))); // Logs the error and returns the original `Result`
+ * result.pipe(tapErr(err => console.error(err))); // Logs the error and returns the original `Result`
  */
-export function catchErr<Value, Err extends ResultError>(
+export function tapErr<Value, Err extends ResultError>(
   fn: (arg: Err) => void
 ): (result: Result<Value, Err>) => Result<Value, Err>;
-export function catchErr<Value, Err extends ResultError>(
+export function tapErr<Value, Err extends ResultError>(
   fn: (arg: Err) => Promise<void>
 ): (result: Result<Value, Err>) => Promise<Result<Value, Err>>;
-export function catchErr<Value, Err extends ResultError>(
+export function tapErr<Value, Err extends ResultError>(
   fn: (arg: Err) => MaybeAsync<void>
 ) {
   return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {

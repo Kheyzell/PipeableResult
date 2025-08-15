@@ -1,9 +1,9 @@
 import { defect, succeed } from "../../src/factories";
-import { catchErr } from "../../src/operators";
+import { tapErr } from "../../src/operators";
 import { ResultError } from "../../src/result.interface";
 import { ErrorTag } from "../../src/types";
 
-describe("catchErr operator", () => {
+describe("tapErr operator", () => {
 
     it("should perform side-effect on a failure Result and return the original Result", () => {
         // Arrange
@@ -12,7 +12,7 @@ describe("catchErr operator", () => {
         const result = defect(error);
 
         // Act
-        const caughtResult = catchErr(sideEffect)(result);
+        const caughtResult = tapErr(sideEffect)(result);
 
         // Assert
         expect(sideEffect).toHaveBeenCalledWith(error);
@@ -27,7 +27,7 @@ describe("catchErr operator", () => {
         const result = succeed("Task completed");
 
         // Act
-        const caughtResult = catchErr(sideEffect)(result);
+        const caughtResult = tapErr(sideEffect)(result);
 
         // Assert
         expect(sideEffect).not.toHaveBeenCalled();

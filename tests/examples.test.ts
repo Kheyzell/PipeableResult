@@ -1,5 +1,5 @@
 import { defect, succeed } from '../src/factories';
-import { catchErr, chain, map, tap } from '../src/operators/operators';
+import { chain, map, tap, tapErr } from '../src/operators/operators';
 import { Result } from '../src/result.interface';
 import { ErrorTag } from '../src/types';
 
@@ -47,7 +47,7 @@ describe("Examples", () => {
           chain((user) => getDocumentsAsync(user.documentIds)),
           map((documents) => documents.filter(checkDocumentHasBeenValidated)),
           tap((validDocuments) => logValidDocuments(validDocuments)),
-          catchErr((err) => logError(err)),
+          tapErr((err) => logError(err)),
         );
   
         // Assert
@@ -82,7 +82,7 @@ describe("Examples", () => {
           chain((user) => getDocumentsAsync(user.documentIds)),
           map((documents) => documents.filter(checkDocumentHasBeenValidated)),
           tap((validDocuments) => logValidDocuments(validDocuments)),
-          catchErr((err) => logError(err)),
+          tapErr((err) => logError(err)),
         );
   
         // Assert

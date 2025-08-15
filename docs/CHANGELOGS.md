@@ -1,8 +1,12 @@
 # Changelogs
 
-### 0.4.1 15/08/2025
+#### 0.4.2 15/08/2025
 
-- Renamed `fail` factory function to `defect` to avoid naming collision with popular testing solutions
+- Rename `catchErr` operator to `tapErr` to better represent its behaviour and use
+
+#### 0.4.1 15/08/2025
+
+- Rename `fail` factory function to `defect` to avoid naming collision with popular testing solutions
 
 ## 0.4.0 - 15/08/2025
 

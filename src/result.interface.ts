@@ -124,7 +124,7 @@ export interface Result<Value, Err extends ResultError = ResultError> {
      * const result = succeed('hello');
      * result.pipe(
      *     map(x => x.toUpperCase()),
-     *     catchErr(e => console.log(e))
+     *     tapErr(e => console.log(e))
      * );
      */
     pipe(): Result<Value, Err>;

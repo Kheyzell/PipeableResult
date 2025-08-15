@@ -4,7 +4,7 @@ export {
     chain,
     chainErr,
     tap,
-    catchErr,
+    tapErr,
     match,
     matchErrors,
 } from './operators';

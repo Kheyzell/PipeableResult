@@ -39,7 +39,7 @@ The pipe of operators allows to compose processes on Results
   * [chain](#chain)
   * [chainErr](#chainerr)
   * [tap](#tap)
-  * [catchErr](#catcherr)
+  * [tapErr](#taperr)
   * [match](#match)
 * [Error Handling](#error-handling)
 
@@ -113,7 +113,7 @@ function divideBy(dividend: number, divisor: number) : Result<number> {
 
 const divisionResult = divideBy(10, 0).pipe(
     tap(console.log),
-    catchErr(console.error)
+    tapErr(console.error)
 );
 
 if (divisionResult.isFailure()) {
@@ -151,7 +151,7 @@ function readFile(path: string): Result<string> {
 
 readFile("example.txt").pipe(
     tap(console.log),
-    catchErr(console.error)
+    tapErr(console.error)
 );
 ```
 
@@ -244,7 +244,7 @@ const userId = 'user123';
     map(user => getDocumentsAsync(user.documentIds)),
     map(documents => documents.filter(checkDocumentHasBeenValidated)),
     tap(validDocuments => console.log(`All valid document found: ${validDocuments.map(doc => doc.name).join(', ')}`)),
-    catchErr(err => console.error(err))
+    tapErr(err => console.error(err))
 );
 ```
 
@@ -420,13 +420,13 @@ succeed("Task completed").pipe(
 );
 ```
 
-### `catchErr`
+### `tapErr`
 
 Performs a side-effect on a `Failure` result error. Returns the original `Result`.
 
 ```typescript
 defect<TaskFailedError>({ [ErrorTag]: "TaskFailedError" }).pipe(
-    catchErr((err) => console.error("Failure:", err.message)) // Logs "Failure: Task failed"
+    tapErr((err) => console.error("Failure:", err.message)) // Logs "Failure: Task failed"
 );
 ```
 
