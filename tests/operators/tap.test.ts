@@ -1,8 +1,10 @@
-import { succeed, fail } from "../../src/factories";
+import { fail, succeed } from "../../src/factories";
 import { tap } from "../../src/operators";
-import { ResultError } from "../../src/result.implementation";
+import { ResultError } from "../../src/result.interface";
+import { ErrorTag } from "../../src/types";
 
-describe("tap function", () => {
+describe("tap operator", () => {
+
     it("should perform side-effect on a successful Result and return the original Result", () => {
         // Arrange
         const sideEffect = jest.fn();
@@ -21,7 +23,7 @@ describe("tap function", () => {
     it("should not perform side-effect on a failure Result and return the original Result", () => {
         // Arrange
         const sideEffect = jest.fn();
-        const error = new ResultError("Error", "Operation failed");
+        const error: ResultError = { [ErrorTag]: "Error", message: "Operation failed" };
         const result = fail(error);
 
         // Act
@@ -33,4 +35,5 @@ describe("tap function", () => {
         expect(tappedResult.isFailure()).toBe(true);
         expect(tappedResult.error()).toBe(error);
     });
+
 });

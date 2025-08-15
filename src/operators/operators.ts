@@ -1,7 +1,13 @@
-import { succeed, fail } from "../factories";
-import { ResultError, ResultImpl } from "../result.implementation";
-import { Result } from "../result.interface";
-import { isResult, isError } from "../type-guards";
+import { fail, succeed } from "../factories";
+import { ResultImpl } from "../result.implementation";
+import {
+  Result,
+  ResultAsync,
+  ResultError,
+  ResultOrAsync,
+  UnwrapResultError
+} from "../result.interface";
+import { ErrorCaseReturns, ErrorCases, MatchCases, MatchCasesReturns, MaybeAsync } from "../types";
 
 /** Operators **/
 
@@ -9,149 +15,208 @@ import { isResult, isError } from "../type-guards";
  * Applies a transformation to a successful `Result` value using the provided predicate.
  * The predicate returns a mapped value, which is wrapped in a new `Success`.
  * If the `Result` is a `Failure`, it returns the original `Failure`.
- * 
+ *
  * @example
  * const result = succeed(5);
  * const mappedResult = result.pipe(map(x => x * 2)); // Returns a `Success` with value 10
  */
-export const map = <Value, Err extends ResultError, A>(
-    fn: (arg: Value) => A
-) => (result: Result<Value, Err>): Result<A, Err> => {
+export function map<InputValue, Err extends ResultError, OutputValue>(
+  fn: (arg: InputValue) => OutputValue
+) {
+  return (result: Result<InputValue, Err>): Result<OutputValue, Err> => {
     if (result.isSuccess()) {
-        return succeed(fn(result.value())) as Result<A, Err>;
+      return succeed(fn(result.value()));
     }
-    return ResultImpl.fail(result.error()!)
-};
+    return fail(result.error()!);
+  };
+}
 
 /**
  * Applies a transformation to a `Failure` error value using the provided predicate.
  * The predicate returns a mapped error, which is wrapped in a new `Failure`.
  * If the `Result` is a `Success`, it returns the original `Success`.
- * 
+ *
  * @example
- * const result = fail(new ResultError('Error', 'Something went wrong'));
- * const handledResult = result.pipe(mapErr(e => new AnotherError(e.name, 'Handled: ' + e.message)));
+ * type UnknownError = { [ErrorTag]: "UnknownError" };
+ * type UserAccountNotActivated = { [ErrorTag]: "UserAccountNotActivated" };
+ * ...
+ * const apiCallResult = fail<UnknownError>({ [ErrorTag]: "UnknownError" });
+ * const result2 = apiCallResult.pipe(mapErr(e => ({ [ErrorTag]: "UserAccountNotActivated" }) as UserAccountNotActivated)); // Returns a `Failure` with this `UserAccountNotActivated` error
  */
-export const mapErr = <Value, Err extends ResultError, B extends ResultError>(
-    fn: (arg: Err) => B | Promise<B>
-) => (result: Result<Value, Err>): Result<Value, B> => {
+export function mapErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
+  fn: (arg: ErrInput) => ErrOutput
+): (result: Result<Input, ErrInput>) => Result<Input, ErrOutput>;
+export function mapErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
+  fn: (arg: ErrInput) => Promise<ErrOutput>
+): (result: Result<Input, ErrInput>) => Promise<Result<Input, ErrOutput>>;
+export function mapErr<Value, ErrInput extends ResultError, ErrOutput extends ResultError>(
+    fn: (arg: ErrInput) => MaybeAsync<ErrOutput>
+) {
+  return (result: Result<Value, ErrInput>): ResultOrAsync<Value, ErrOutput> => {
     if (result.isFailure()) {
-        const fnRes = fn(result.error()!);
-        if (fnRes instanceof Promise) {
-            return fnRes.then(err => fail(err)) as any as Result<Value, B>;
-        }
-        return fail(fnRes) as Result<Value, B>;
+      const fnRes = fn(result.error()!);
+      if (fnRes instanceof Promise) {
+        return fnRes.then((err) => fail(err));
+      }
+      return fail(fnRes);
     }
     return ResultImpl.succeed(result.value());
-};
+  };
+}
 
 /**
  * Chains another operation on a successful `Result` value that returns a new `Result`.
  * If the `Result` is a `Failure`, it returns the original `Failure`.
- * 
+ *
  * @example
  * const result = succeed(5);
- * const chainedResult = result.pipe(chain(x => succeed(x * 2))); // Returns a `Success` with value 10
+ * const chainedResult = result.pipe(chain(x => {
+ *     if (x < 0) { // if the value negative returns a `Failure`
+ *         return fail({ [ErrorTag]: "NegativeNumberError" });
+ *     }
+ *     return succeed(x * 2); // Returns a `Success` with value 10
+ * }));
  */
-export const chain = <Value, Err extends ResultError, A>(
-    fn: (arg: Value) => (Result<A, Err> | A | Err)
-) => (result: Result<Value, Err>): Result<A, Err> => {
+export function chain<Input, ErrInput extends ResultError, Output, ErrOutput extends ResultError>(
+  fn: (arg: Input) => ResultAsync<Output, ErrOutput>
+): (
+  result: Result<Input, ErrInput>
+) => ResultAsync<Output, ErrInput | ErrOutput>;
+export function chain<Input, ErrInput  extends ResultError,Output, ErrOutput  extends ResultError>(
+  fn: (arg: Input) => Result<Output, ErrOutput>
+): (result: Result<Input, ErrInput>) => Result<Output, ErrInput | ErrOutput>;
+export function chain<Input, ErrInput extends ResultError, Output, ErrOutput extends ResultError>(
+    fn: (arg: Input) => ResultOrAsync<Output, ErrOutput>
+) {
+  return (result: Result<Input, ErrInput>) => {
     if (result.isSuccess()) {
-        const fnValue = fn(result.value());
-        if (isResult(fnValue)) {
-            return fnValue as Result<A, Err>;
-        }
-
-        if (isError<Err>(fnValue)) {
-            const error = fnValue as Err;
-            return ResultImpl.fail(error) as Result<A, Err>;
-        }
-
-        return succeed(fnValue) as Result<A, Err>;
+      return fn(result.value());
     }
-
     return ResultImpl.fail(result.error()!);
-};
+  };
+}
 
 /**
  * Chains another operation on a `Failure` error value that returns a new `Result`.
  * If the `Result` is a `Success`, it returns the original `Success`.
- * 
+ *
  * @example
- * const result = fail(new ResultError('Error', 'Something went wrong'));
+ * const result = fail({ [ErrorTag]: "UnknownError" });
  * const handledResult = result.pipe(chainErr(e => succeed([]))); // Converts the failure to success
  */
-export const chainErr = <Value, Err extends ResultError, B extends ResultError>(
-    fn: (arg: Err) => (Result<Value, B> | Value | B | Promise<Result<Value, B> | Value | B>)
-) => (result: Result<Value, Err>): Result<Value, B> => {
+export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
+  fn: (arg: ErrInput) => Result<Input, ErrOutput>
+): (result: Result<Input, ErrInput>) => Result<Input, ErrInput | ErrOutput>;
+export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
+  fn: (arg: ErrInput) => ResultAsync<Input, ErrOutput>
+): (result: Result<Input, ErrInput>) => ResultAsync<Input, ErrInput | ErrOutput>;
+export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
+    fn: (arg: ErrInput) => ResultOrAsync<Input, ErrOutput>
+) {
+  return (
+    result: Result<Input, ErrInput>
+  ): ResultOrAsync<Input, ErrInput | ErrOutput> => {
     if (result.isFailure()) {
-        const fnValue = fn(result.error()!);
-        if (isResult(fnValue)) {
-            return fnValue as Result<Value, B>;
-        }
-
-        if (isError(fnValue)) {
-            return ResultImpl.fail(fnValue) as Result<Value, B>;
-        }
-
-        return succeed(fnValue) as Result<Value, B>;
+      return fn(result.error()!);
     }
 
-    return ResultImpl.succeed(result.value()) as Result<Value, B>;
-};
+    return ResultImpl.succeed(result.value());
+  };
+}
 
 /**
  * Performs a side-effect operation on a successful `Result` value.
  * Returns the original `Result` after the side effect.
- * 
+ *
  * @example
- * const result = succeed('Task completed');
- * result.pipe(tap(() => console.log('Success!'))); // Logs "Success!" and returns the original `Result`
+ * const result = succeed('Task completed!');
+ * result.pipe(tap(state => console.log(state))); // Logs "Task completed!" and returns the original `Result`
  */
-export const tap = <Value, Err extends ResultError>(
-    fn: (arg: Value) => void
-) => (result: Result<Value, Err>): Result<Value, Err> => {
+export function tap<Value, Err extends ResultError>(
+  fn: (arg: Value) => void
+): (result: Result<Value, Err>) => Result<Value, Err>;
+export function tap<Value, Err extends ResultError>(
+  fn: (arg: Value) => Promise<void>
+): (result: Result<Value, Err>) => Promise<Result<Value, Err>>;
+export function tap<Value, Err extends ResultError>(
+  fn: (arg: Value) => MaybeAsync<void>
+) {
+  return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {
     if (result.isSuccess()) {
-        fn(result.value());
+      const fnRes = fn(result.value());
+      if (fnRes instanceof Promise) {
+        return fnRes.then(() => result);
+      }
     }
     return result;
-};
+  };
+}
 
 /**
  * Performs a side-effect operation on a `Failure` error value.
  * Returns the original `Result` after the side effect.
- * 
+ *
  * @example
  * const result = fail(new ResultError('Error', 'Task failed'));
  * result.pipe(catchErr(err => console.error(err))); // Logs the error and returns the original `Result`
  */
-export const catchErr = <Value, Err extends ResultError>(
-    fn: (arg: Err) => void
-) => (result: Result<Value, Err>): Result<Value, Err> => {
+export function catchErr<Value, Err extends ResultError>(
+  fn: (arg: Err) => void
+): (result: Result<Value, Err>) => Result<Value, Err>;
+export function catchErr<Value, Err extends ResultError>(
+  fn: (arg: Err) => Promise<void>
+): (result: Result<Value, Err>) => Promise<Result<Value, Err>>;
+export function catchErr<Value, Err extends ResultError>(
+  fn: (arg: Err) => MaybeAsync<void>
+) {
+  return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {
     if (result.isFailure()) {
-        fn(result.error()!);
+      fn(result.error()!);
     }
     return result;
-};
+  };
+}
+
 
 /**
- * Matches the `Result` against a success case (`ok`) and an error case (`err`).
- * It passes the value or error to the appropriate handler and returns the original `Result`.
- * 
+ * Provides a matching structure on the `Result` `Success` case
+ * and all `Failure` cases (meaning all possible errors) to a `Success`.
+ *
  * @example
- * const result = succeed('Task completed');
- * result.pipe(match({
- *     ok: value => console.log('Success:', value),
- *     err: error => console.error('Error:', error)
- * }));
+ * const result: Result<number, ErrorType1 | ErrorType2>;
+ * result.pipe(
+ *     match({
+ *         Success: value => succeed(value * 2),
+ *         ErrorType1: error => succeed(error.code === 500 ? true : false),
+ *         ErrorType2: error => someOtherCalculation(error),
+ *     })
+ * );
+*/
+export function match<Value, Err extends ResultError, Cases extends MatchCases<Value, Err, any>>(
+  cases: Cases
+) {
+  return (result: Result<Value, Err>): MatchCasesReturns<Cases> => {
+    return result.match(cases);
+  };
+}
+
+/**
+ * Provides a matching structure on all `Failure` cases (meaning all possible errors) to a `Success`.
+ *
+ * @example
+ * const result: Result<number, ErrorType1 | ErrorType2 | ErrorType3>;
+ * result.pipe(
+ *     matchErrors({
+ *         ErrorType1: error => succeed(0),
+ *         ErrorType2: error => succeed("VALUE_0"),
+ *         ErrorType3: error => fail<ErrorType5>({ [ErrorTag]: "ErrorType4", message: `Error code ${error.code}` }),
+ *     })
+ * );
  */
-export const match = <Value, Err extends ResultError>(
-    handlers: { ok: (arg: Value) => void; err: (arg: Err) => void }
-) => (result: Result<Value, Err>): Result<Value, Err> => {
-    if (result.isSuccess()) {
-        handlers.ok(result.value());
-    } else {
-        handlers.err(result.error()!);
-    }
-    return result;
-};
+export function matchErrors<R extends Result<any, any>, Cases extends ErrorCases<UnwrapResultError<R>, ResultOrAsync<any, UnwrapResultError<R>>>>(
+  errorCases: Cases
+) {
+  return (result: R): R | ErrorCaseReturns<Cases> => {
+    return result.matchErrors(errorCases);
+  }
+}

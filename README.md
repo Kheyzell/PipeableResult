@@ -12,6 +12,10 @@ The pipe of operators allows to compose processes on Results
   > I was inspired by the [rxjs.dev](https://rxjs.dev/) library for adding the pipeable operators.
 </details>
 
+## Changelogs
+
+> [=> see CHANGELOGS.md](docs/CHANGELOGS.md)
+
 ## Table of Contents
 
 * [Installation](#installation)
@@ -53,13 +57,17 @@ npm install pipeable-result
 Result is a functionnal approach to handling error.
 In most cases it can be used in place of the traditionnal `try/catch` method.
 
-#### Advantages:
+#### Benefits:
 - Compile time error check (meaning you cannot forget to handle the error before accessing the value).
 - Explicit and predictable.
 - No uncaught exceptions.
 - Improved type safety (with TypeScript).
-- Composability (functional chaining (map, flatMap)).
+- Composability (functional chaining (map, tap, chain, ...)).
 - Easier testing.
+
+#### drawbacks:
+- Adds verbosity (needs to explicitly wraps values and errors in a `Result`)
+- Complexify debugging (when having multiple layers of function calls, debuggers can have a harder time following the flow)
 
 ### Some examples
 
@@ -233,7 +241,7 @@ function checkDocumentHasBeenValidated(document: Document): boolean {
 const userId = 'user123';
 
 (await getUserAsync(userId)).pipe(
-    map(user => getDocumentsAsync(user.documents)),
+    map(user => getDocumentsAsync(user.documentIds)),
     map(documents => documents.filter(checkDocumentHasBeenValidated)),
     tap(validDocuments => console.log(`All valid document found: ${validDocuments.map(doc => doc.name).join(', ')}`)),
     catchErr(err => console.error(err))
@@ -260,16 +268,20 @@ const result3 = succeed();              // Successful Result with no value
 
 Creates a `Failure`, a result containing an error.
 
+> **Note**: the idiomatic way is to provide a specific type for a specific error so that an action can be performed depending on what went wrong.
+
 ```typescript
 import { fail, ResultError } from "pipeable-result";
 
-const error = new ResultError("Error", "Something went wrong");
-const result = fail(error); // Result with an error
+type HttpNotFoundError = { [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: string };
+...
+const result = fail<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });
+// => Result with an error of type HttpNotFoundError
 ```
 
 ## Interface
 
-Each `Result` object offers a set of methods for handling and inspecting its state. Below are the core methods provided.
+The `Result` object offers a set of methods for handling and inspecting its state. Below are the core methods provided.
 
 ### `isSuccess`
 
@@ -296,11 +308,17 @@ if (result.isFailure()) {
 Safely retrieves the value inside the `Result`. If the `Result` is a `Failure`, it calls the provided error handler to return a value.
 
 ```typescript
+const result = unsafeCalculation(); // some Result<number, ResultError> to handle
+const value = result.unwrap(error => 0); // safely unwrap the value by handling the error case
+```
+
+`unwrap` also provides a matching structure to handle each error exhaustively.
+
+```typescript
+const result = unsafeCalculation();
 const value = result.unwrap({
-    err: (error) => {
-        console.error("Error:", error.message);
-        return "Default Value"; // Provide a default or handle error here
-    },
+    HttpResponseError: (error) => 0, // handle HttpResponseError in a certain way
+    NetworkError: (error) => doMoreCalculation(), // handle NetworkError in a different way
 });
 ```
 
@@ -309,12 +327,14 @@ const value = result.unwrap({
 Returns a string representation of the `Result`.
 
 ```typescript
-console.log(result.inspect()); // "Success(5)" or "Failure(Error name: Error message)"
+succeed("Hello").inspect(); // => `Success("Hello")`
+fail({ [ErrorTag]: "TestError", message: "Failed process", code: 40 })
+    .inspect(); // => `Failure(TestError): { message: "Failed process", code: 40 }`
 ```
 
-### `value`
+### ⚠️ `value` ⚠️
 
-Unsafely retrieves the value inside the `Result`. Throws an error if the `Result` is a `Failure`.
+**Unsafely** retrieves the value inside the `Result`. **Throws an error** if the `Result` is a `Failure`.
 
 ```typescript
 try {
@@ -337,14 +357,14 @@ if (error) {
 
 ## Pipe
 
-The `pipe` method allows chaining of transformations and side-effects on the `Result`. Each transformation function receives the `Result` and returns a new one.
+The `pipe` method allows chaining of transformations and side-effects on the `Result`. Each transformation function receives the `Result`, do some operation on it and returns it.
 
 ### Example
 ```typescript
 const result = succeed("hello")
     .pipe(
-        map((x) => x.toUpperCase()),    // Transform value
-        catchErr((e) => console.log(e)) // Handle error if occurs
+        map((x) => x.toUpperCase()),    // Transform the value
+        tap((x) => console.log(x))      // Logs the value
     );
 ```
 
@@ -366,8 +386,10 @@ const result = succeed(5)
 Transforms a `Failure` result error and wraps it in a new `Failure`. If the `Result` is a `Success`, it returns the original `Success`.
 
 ```typescript
-const result = fail(new ResultError("Error", "Something went wrong"))
-    .pipe(mapErr((e) => new ResultError(e.name, "Handled: " + e.message))); // Result with the new ResultError
+const result = fail<SomeLowLevelError>({ [ErrorTag]: "SomeLowLevelError", code: 16 })
+    .pipe(
+        mapErr((e) => ({ [ErrorTag]: "SomeOtherError", message: `An error occurred during operation with code ${e.code}` }) as SomeOtherError)
+    ); // Result with the new error
 ```
 
 ### `chain`
@@ -403,7 +425,7 @@ succeed("Task completed").pipe(
 Performs a side-effect on a `Failure` result error. Returns the original `Result`.
 
 ```typescript
-fail(new ResultError("Error", "Task failed")).pipe(
+fail<TaskFailedError>({ [ErrorTag]: "TaskFailedError" }).pipe(
     catchErr((err) => console.error("Failure:", err.message)) // Logs "Failure: Task failed"
 );
 ```
@@ -413,23 +435,35 @@ fail(new ResultError("Error", "Task failed")).pipe(
 Matches the `Result` against success and error handlers, executing the appropriate one based on the state of the `Result`.
 
 ```typescript
-const result = succeed("Task completed");
-
+const result: Result<number, ErrorType1 | ErrorType2> = await unsafeCalculation();
 result.pipe(
     match({
-        ok: (value) => console.log("Success:", value),
-        err: (error) => console.error("Failure:", error.message),
+        Success: value => succeed(value * 2),
+        ErrorType1: error => succeed(error.code === 500 ? true : false),
+        ErrorType2: error => someOtherCalculation(error),
     })
 );
 ```
 
 ## Error Handling
 
-The `ResultError` class is used to encapsulate errors within Failure results.
+Errors are represented by the type `ResultError`.
+They must use the symbol `ErrorTag` with string so they can be distinguished from each other at runtime in the *matching structures* (see methods `match`, `matchErrors`, `unwrap`, etc...) and any number of other keys.
 
+The prefered way to create an error is to first create an error with the correct shape
 ```typescript
-const error = new ResultError("CustomError", "An error occurred");
-const result = fail(error);
+type ExampleError = { [ErrorTag]: "ExampleError", someKey: number };
+```
 
-console.log(result.inspect()); // "Failure(An error occurred)"
+Or extends `ResultError`
+```typescript
+interface AnotherError extends ResultError {
+    [ErrorTag]: "AnotherError";
+    message: string;
+}
+```
+
+And then create a `Failure` using the `fail` factory
+```typescript
+const result = fail<ExampleError>({ [ErrorTag]: "ExampleError", someKey: 0 });
 ```

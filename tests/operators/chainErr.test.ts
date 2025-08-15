@@ -1,14 +1,15 @@
 import { fail, succeed } from "../../src/factories";
 import { chainErr } from "../../src/operators";
-import { ResultError } from "../../src/result.implementation";
+import { Result, ResultError } from "../../src/result.interface";
+import { ErrorTag } from "../../src/types";
 
-describe("chainErr function", () => {
+describe("chainErr operator", () => {
 
     describe("on a failure Result", () => {
-        it("should apply the function to a failure Result and return a new Result", () => {
+        it("should apply the function and return a new Success", () => {
             // Arrange
-            const error = new ResultError("TestError", "Something went wrong");
-            const result = fail(error);
+            const error: ResultError = { [ErrorTag]: "TestError", message: "Something went wrong" };
+            const result = fail<ResultError, boolean>(error);
             
             // Act
             const chainedResult = chainErr(() => succeed(true))(result);
@@ -18,40 +19,29 @@ describe("chainErr function", () => {
             expect(chainedResult.value()).toEqual(true);
         });
 
-        it("should return a new Failure if the function returns an error", () => {
+        it("should apply the function and return a new Failure", () => {
             // Arrange
-            const error = new ResultError("TestError", "Something went wrong");
+            const error: ResultError = { [ErrorTag]: "TestError", message: "Something went wrong" };
             const result = fail(error);
-            
-            // Act
-            const chainedResult = chainErr(() => new ResultError("NewError", "New error message"))(result);
 
+            const anotherError: ResultError = { [ErrorTag]: "NewError", message: "New error message" };
+    
+            // Act
+            const chainedResult = chainErr(() => fail(anotherError))(result);
+    
             // Assert
             expect(chainedResult.isFailure()).toBe(true);
             expect(chainedResult.error()?.message).toBe("New error message");
-        });
-
-        it("should return a value wrapped in a Success if the function returns a value", () => {
-            // Arrange
-            const error = new ResultError("TestError", "Something went wrong");
-            const result = fail(error);
-            
-            // Act
-            const chainedResult = chainErr(() => true)(result);
-
-            // Assert
-            expect(chainedResult.isSuccess()).toBe(true);
-            expect(chainedResult.value()).toEqual(true);
-        });
+        })
     });
     
     describe("on a success Result", () => {
         it("should return the original Success if the Result is a success", () => {
             // Arrange  
-            const result = succeed(42);
+            const result: Result<number, ResultError> = succeed(42);
             
             // Act
-            const chainedResult = chainErr(() => succeed())(result);
+            const chainedResult = chainErr(() => succeed(0))(result);
     
             // Assert
             expect(chainedResult.isSuccess()).toBe(true);

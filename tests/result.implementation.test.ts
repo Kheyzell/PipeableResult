@@ -1,11 +1,22 @@
 import { fail, succeed } from '../src/factories';
 import { chain, chainErr, map, mapErr } from '../src/operators';
-import { ResultError, ResultImpl } from '../src/result.implementation';
-import { ResultOperatorFunction } from '../src/types';
+import { ResultImpl } from '../src/result.implementation';
+import { Result, ResultError } from '../src/result.interface';
+import { ErrorCases, ErrorTag, ResultOperator } from '../src/types';
 
 describe("ResultImpl", () => {
 
     describe("static succeed method", () => {
+        it("should create a success result without a value", () => {
+            // Act
+            const result = ResultImpl.succeed();
+
+            // Arrange
+            expect(result.isSuccess()).toBe(true);
+            expect(result.isFailure()).toBe(false);
+            expect(result.value()).toBeNull();
+        });
+
         it("should create a success result with a value", () => {
             // Act
             const result = ResultImpl.succeed(42);
@@ -20,10 +31,10 @@ describe("ResultImpl", () => {
     describe("static fail method", () => {
         it("should create a failure result with an error", () => {
             // Arrange
-            const error = new ResultError("TestError", "Something went wrong");
+            const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<number, ResultError>(error);
+            const result = ResultImpl.fail<ResultError>(error);
 
             // Assert
             expect(result.isSuccess()).toBe(false);
@@ -43,10 +54,10 @@ describe("ResultImpl", () => {
 
         it("isFailure should return true for a failure result", () => {
             // Arrange
-            const error = new ResultError("TestError", "Failure occurred");
+            const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<string, ResultError>(error);
+            const result = ResultImpl.fail<ResultError>(error);
 
             // Assert
             expect(result.isFailure()).toBe(true);
@@ -57,43 +68,92 @@ describe("ResultImpl", () => {
         it("should return the value for a success result", () => {
             // Act
             const result = ResultImpl.succeed(100);
+            const value = result.unwrap(() => 0 );
 
             // Assert
-            expect(result.unwrap({ err: () => 0 })).toBe(100);
+            expect(value).toBe(100);
         });
 
         it("should call the err handler for a failure result", () => {
             // Arrange
-            const error = new ResultError("TestError", "An error occurred");
+            const error: ResultError = { [ErrorTag]: "TestError" };
 
-            // Act
-            const result = ResultImpl.fail<number, ResultError>(error);
+            const result = ResultImpl.fail<ResultError, number>(error);
             const errHandler = jest.fn(() => -1);
+            
+            // Act
+            const value = result.unwrap(errHandler);
 
             // Assert
-            expect(result.unwrap({ err: errHandler })).toBe(-1);
+            expect(value).toBe(-1);
             expect(errHandler).toHaveBeenCalledWith(error);
+        });
+        
+        it("should handle multiple error handlers for a failure result and call the first handler", () => {
+            // Arrange
+            type Error1 = { [ErrorTag]: "Error1" };
+            type Error2 = { [ErrorTag]: "Error2" };
+            const error: Error1 | Error2 = { [ErrorTag]: "Error1" };
+
+            const result = ResultImpl.fail<Error1 | Error2, number>(error);
+            const errHandler1 = jest.fn(() => -1);
+            const errHandler2 = jest.fn(() => -2);
+            const casesHandler: ErrorCases<Error1 | Error2, number> = {
+                Error1: errHandler1,
+                Error2: errHandler2
+            };
+
+            // Act
+            const value = result.unwrap(casesHandler);
+
+            // Assert
+            expect(value).toBe(-1);
+            expect(errHandler1).toHaveBeenCalledWith(error);
+            expect(errHandler2).not.toHaveBeenCalledWith(error);
+        });
+        
+        it("should handle multiple error handlers for a failure result and call the second handler", () => {
+            // Arrange
+            type Error1 = { [ErrorTag]: "Error1" };
+            type Error2 = { [ErrorTag]: "Error2" };
+            const error: Error1 | Error2 = { [ErrorTag]: "Error2" };
+
+            const result = ResultImpl.fail<Error1 | Error2, number>(error);
+            const errHandler1 = jest.fn(() => -1);
+            const errHandler2 = jest.fn(() => -2);
+            const casesHandler: ErrorCases<Error1 | Error2, number> = {
+                Error1: errHandler1,
+                Error2: errHandler2
+            };
+
+            // Act
+            const value = result.unwrap(casesHandler);
+
+            // Assert
+            expect(value).toBe(-2);
+            expect(errHandler2).toHaveBeenCalledWith(error);
+            expect(errHandler1).not.toHaveBeenCalledWith(error);
         });
     });
 
     describe("inspect method", () => {
         it("should return a correct string for a success result", () => {
             // Act
-            const result = ResultImpl.succeed("hello");
+            const inspectString = ResultImpl.succeed("hello").inspect();
 
             // Assert
-            expect(result.inspect()).toBe("Success(hello)");
+            expect(inspectString).toBe('Success("hello")');
         });
 
         it("should return a correct string for a failure result", () => {
             // Arrange
-            const error = new ResultError("TestError", "Failed process");
+            const error: ResultError = { [ErrorTag]: "TestError", message: "Failed process", code: 40, data: { isTest: true} };
 
             // Act
-            const result = ResultImpl.fail<string, ResultError>(error);
+            const inspectString = ResultImpl.fail<ResultError>(error).inspect();
 
             // Assert
-            expect(result.inspect()).toBe("Failure(TestError: Failed process)");
+            expect(inspectString).toBe(`Failure(TestError): { message: "Failed process", code: 40, data: {"isTest":true} }`);
         });
     });
 
@@ -108,10 +168,10 @@ describe("ResultImpl", () => {
 
         it("should throw an error if the result is a failure", () => {
             // Arrange
-            const error = new ResultError("TestError", "Cannot get value from Failure");
+            const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<string, ResultError>(error);
+            const result = ResultImpl.fail<ResultError>(error);
 
             // Assert
             expect(() => result.value()).toThrow("Cannot get value from Failure");
@@ -121,10 +181,10 @@ describe("ResultImpl", () => {
     describe("error method", () => {
         it("should return the error if the result is a failure", () => {
             // Arrange
-            const error = new ResultError("TestError", "An error occurred");
+            const error: ResultError = { [ErrorTag]: "TestError" };
 
             // Act
-            const result = ResultImpl.fail<string, ResultError>(error);
+            const result = ResultImpl.fail<ResultError>(error);
 
             // Assert
             expect(result.error()).toBe(error);
@@ -139,16 +199,142 @@ describe("ResultImpl", () => {
         });
     });
 
+    describe("match method", () => {
+       it("should return a value when matching on Success", () => {
+            // Arrange
+            type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+            type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+    
+            const result: Result<number, ErrorType1 | ErrorType2> = succeed<number>(10);
+            const cases = {
+                Success: (value: number) => value * 2,
+                ErrorType1: (_err: any) => 0,
+                ErrorType2: (_err: any) => -1,
+            };
+    
+            // Act
+            const matched = result.match(cases);
+    
+            // Assert
+            expect(matched).toBe(20);
+        });
+    
+        it("should return the value of the matched error handler (ErrorType1)", () => {
+            // Arrange
+            type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+            type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+    
+            const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
+            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const cases = {
+                Success: (_: number) => 999,
+                ErrorType1: (_err: ErrorType1) => 7,
+                ErrorType2: (_err: ErrorType2) => -1,
+            };
+    
+            // Act
+            const matched = result.match(cases);
+    
+            // Assert
+            expect(matched).toBe(7);
+        });
+    
+        it("should return the value of the matched error handler (ErrorType2)", () => {
+            // Arrange
+            type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+            type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+    
+            const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
+            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const cases = {
+                Success: (_: number) => 999,
+                ErrorType1: (_err: ErrorType1) => 7,
+                ErrorType2: (_err: ErrorType2) => -1,
+            };
+    
+            // Act
+            const matched = result.match(cases);
+    
+            // Assert
+            expect(matched).toBe(-1);
+        });
+    
+        it("should throw if no matching case is provided", () => {
+            // Arrange
+            const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };
+            const result = fail(error);
+            const cases = {
+                Success: (_: number) => 1,
+                // Missing handler for "UnhandledType"
+            } as any;
+    
+            // Act & Assert
+            expect(() => result.match(cases)).toThrow();
+        });
+    });
+
+    describe("matchErrors method", () => {    
+        it("should return the value of the matched error handler (ErrorType1)", () => {
+            // Arrange
+            type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+            type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+    
+            const error: ErrorType1 = { [ErrorTag]: "ErrorType1" };
+            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const cases = {
+                ErrorType1: (_err: ErrorType1) => 7,
+                ErrorType2: (_err: ErrorType2) => -1,
+            };
+    
+            // Act
+            const matched = result.matchErrors(cases);
+    
+            // Assert
+            expect(matched).toBe(7);
+        });
+    
+        it("should return the value of the matched error handler (ErrorType2)", () => {
+            // Arrange
+            type ErrorType1 = { [ErrorTag]: "ErrorType1" }
+            type ErrorType2 = { [ErrorTag]: "ErrorType2" }
+    
+            const error: ErrorType2 = { [ErrorTag]: "ErrorType2" };
+            const result = fail<ErrorType1 | ErrorType2, number>(error);
+            const cases = {
+                ErrorType1: (_err: ErrorType1) => 7,
+                ErrorType2: (_err: ErrorType2) => -1,
+            };
+    
+            // Act
+            const matched = result.matchErrors(cases);
+    
+            // Assert
+            expect(matched).toBe(-1);
+        });
+    
+        it("should throw if no matching case is provided", () => {
+            // Arrange
+            const error: ResultError = { [ErrorTag]: "UnhandledType", message: "Unhandled" };
+            const result = fail(error);
+            const cases = {
+                // Missing handler for "UnhandledType"
+            } as any;
+    
+            // Act & Assert
+            expect(() => result.matchErrors(cases)).toThrow();
+        }); 
+    });
+
     describe("pipe method", () => {
-        const toUpperCase: ResultOperatorFunction<string, ResultError, string, ResultError> = (result) => {
+        const toUpperCase: ResultOperator<string, ResultError, Result<string, ResultError>> = (result) => {
             return result.isSuccess() ? ResultImpl.succeed(result.value().toUpperCase()) : result;
         };
 
-        const addExclamation: ResultOperatorFunction<string, ResultError, string, ResultError> = (result) => {
+        const addExclamation: ResultOperator<string, ResultError, Result<string, ResultError>> = (result) => {
             return result.isSuccess() ? ResultImpl.succeed(result.value() + "!") : result;
         };
 
-        const addInterrogation: ResultOperatorFunction<string, ResultError, string, ResultError> = (result) => {
+        const addInterrogation: ResultOperator<string, ResultError, Result<string, ResultError>> = (result) => {
             return result.isSuccess() ? ResultImpl.succeed(result.value() + "?") : result;
         };
 
@@ -186,23 +372,23 @@ describe("ResultImpl", () => {
 
         it("should handle errors asynchronously", async () => {
             // Arrange
-            const error = new ResultError("TestError", "Failed process");
+            const error: ResultError = { [ErrorTag]: "TestError", message: "Failed process" };
 
             // Act
-            const result = await ResultImpl.fail<string, ResultError>(error).pipe(
+            const result = await fail<ResultError>(error).pipe(
                 mapErr(async x => {
                     await delay({ ms: 1 });
-                    return new ResultError("MapError", `${x.message}: Mapping error`);
+                    return { [ErrorTag]: "MapError", message: `${x.message}: Mapping error` };
                 }),
                 chainErr(async x => {
                     await delay({ ms: 1 });
-                    return fail(new ResultError("ChainError", `${x.message}: Chaining error async`));
+                    return fail({ [ErrorTag]: "ChainError", message: `${x.message}: Chaining error async` });
                 }),
             );
 
             // Assert
             expect(result.isFailure()).toBe(true);
-            expect(result.error()?.name).toBe("ChainError");
+            expect(result.error()?.[ErrorTag]).toBe("ChainError");
             expect(result.error()?.message).toBe("Failed process: Mapping error: Chaining error async");
         })
     });

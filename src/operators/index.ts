@@ -6,4 +6,5 @@ export {
     tap,
     catchErr,
     match,
+    matchErrors,
 } from './operators';

@@ -1,13 +1,14 @@
-import { succeed, fail } from "../../src/factories";
+import { fail, succeed } from "../../src/factories";
 import { catchErr } from "../../src/operators";
-import { ResultError } from "../../src/result.implementation";
+import { ResultError } from "../../src/result.interface";
+import { ErrorTag } from "../../src/types";
 
-describe("catchErr function", () => {
+describe("catchErr operator", () => {
 
     it("should perform side-effect on a failure Result and return the original Result", () => {
         // Arrange
         const sideEffect = jest.fn();
-        const error = new ResultError("TestError", "Task failed");
+        const error: ResultError = { [ErrorTag]: "TestError", message: "Task failed" };
         const result = fail(error);
 
         // Act

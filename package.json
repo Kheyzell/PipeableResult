@@ -1,6 +1,6 @@
 {
   "name": "pipeable-result",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Small and simple pipeable Result library in TypeScript to handle errors in a more functional way",
   "main": "out/src/index.js",
   "types": "out/src/index.d.ts",
