@@ -1,5 +1,9 @@
 # Changelogs
 
+#### 0.4.3 26/08/2025
+
+- add `safe` factory to create a Result from an operation that might throw, encapsulating the exception with a `ResultError`
+
 #### 0.4.2 15/08/2025
 
 - Rename `catchErr` operator to `tapErr` to better represent its behaviour and use
@@ -12,6 +16,6 @@
 
 - Introduction of matching structures to distinguish between `Success` case and all different types of `error` cases
     - rework on the ResultError type system to allow for better supported distinction between types of errors
-    - adds methods `match` and `matchErrors`
-    - adds operators `match` and `matchErrors`
-    - unwrap now support the matching structure
+    - add methods `match` and `matchErrors`
+    - add operators `match` and `matchErrors`
+    - `unwrap` now support the matching structure

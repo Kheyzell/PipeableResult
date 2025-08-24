@@ -279,6 +279,32 @@ const result = defect<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code
 // => Result with an error of type HttpNotFoundError
 ```
 
+### `safe` Factory
+
+Used to safely wrap up an exception and turn it into a `ResultError`
+Creates a `Result` containing either the value of the operation if succesful or an error if the operation throws an exception.
+It can be called in 3 differents ways:
+- using no error handler in which case an error of type `UnknownError` will be created if the operation throws.
+- using a predefined error that will be used if the operation throws.
+- using a handler function with the exception as parameter that will be used if the operation throws.
+
+```typescript
+const result = safe(() => 8); // Returns a `Success` with value 8
+const result = safe(() => 8/0); // Returns a `Failure` with a `UnknownError`
+const result = safe<DivisionByZeroError>(() => 8/0, { [ErrorTag]: "DivisionByZeroError" }); // Returns a `Failure` with a `DivisionByZeroError`
+const result = safe<DivisionByZeroError>(() => 8/0, (ex) => ({ [ErrorTag]: "DivisionByZeroError", ex })); // Returns a `Failure` with a `DivisionByZeroError`
+```
+
+> **Note**: <br />
+> Async operations are also supported
+>
+> ```typescript
+> declare function getDatabaseConnectionAsync(): Promise<DatabaseConnection>
+>
+> const databaseConnectionResult = await safe<DatabaseConnection, ConnectionError>(getDatabaseConnectionAsync, { [ErrorTag]: "ConnectionError" });
+> // => databaseConnectionResult is of type `Result<DatabaseConnection, ConnectionError>`
+> ```
+
 ## Interface
 
 The `Result` object offers a set of methods for handling and inspecting its state. Below are the core methods provided.
