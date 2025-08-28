@@ -1,13 +1,13 @@
-import { defect, succeed } from "../factories";
-import { ResultImpl } from "../result.implementation";
+import { defect, succeed } from '../factories';
+import { ResultImpl } from '../result.implementation';
 import {
-  Result,
-  ResultAsync,
-  ResultError,
-  ResultOrAsync,
-  UnwrapResultError
-} from "../result.interface";
-import { ErrorCaseReturns, ErrorCases, MatchCases, MatchCasesReturns, MaybeAsync } from "../types";
+    Result,
+    ResultAsync,
+    ResultError,
+    ResultOrAsync,
+    UnwrapResultError,
+} from '../result.interface';
+import { ErrorCaseReturns, ErrorCases, MatchCases, MatchCasesReturns, MaybeAsync } from '../types';
 
 /** Operators **/
 
@@ -21,14 +21,14 @@ import { ErrorCaseReturns, ErrorCases, MatchCases, MatchCasesReturns, MaybeAsync
  * const mappedResult = result.pipe(map(x => x * 2)); // Returns a `Success` with value 10
  */
 export function map<InputValue, Err extends ResultError, OutputValue>(
-  fn: (arg: InputValue) => OutputValue
+    fn: (arg: InputValue) => OutputValue,
 ) {
-  return (result: Result<InputValue, Err>): Result<OutputValue, Err> => {
-    if (result.isSuccess()) {
-      return succeed(fn(result.value()));
-    }
-    return defect(result.error()!);
-  };
+    return (result: Result<InputValue, Err>): Result<OutputValue, Err> => {
+        if (result.isSuccess()) {
+            return succeed(fn(result.value()));
+        }
+        return defect(result.error()!);
+    };
 }
 
 /**
@@ -44,24 +44,24 @@ export function map<InputValue, Err extends ResultError, OutputValue>(
  * const result2 = apiCallResult.pipe(mapErr(e => ({ [ErrorTag]: "UserAccountNotActivated" }) as UserAccountNotActivated)); // Returns a `Failure` with this `UserAccountNotActivated` error
  */
 export function mapErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
-  fn: (arg: ErrInput) => ErrOutput
+    fn: (arg: ErrInput) => ErrOutput,
 ): (result: Result<Input, ErrInput>) => Result<Input, ErrOutput>;
 export function mapErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
-  fn: (arg: ErrInput) => Promise<ErrOutput>
+    fn: (arg: ErrInput) => Promise<ErrOutput>,
 ): (result: Result<Input, ErrInput>) => Promise<Result<Input, ErrOutput>>;
 export function mapErr<Value, ErrInput extends ResultError, ErrOutput extends ResultError>(
-    fn: (arg: ErrInput) => MaybeAsync<ErrOutput>
+    fn: (arg: ErrInput) => MaybeAsync<ErrOutput>,
 ) {
-  return (result: Result<Value, ErrInput>): ResultOrAsync<Value, ErrOutput> => {
-    if (result.isFailure()) {
-      const fnRes = fn(result.error()!);
-      if (fnRes instanceof Promise) {
-        return fnRes.then((err) => defect(err));
-      }
-      return defect(fnRes);
-    }
-    return ResultImpl.succeed(result.value());
-  };
+    return (result: Result<Value, ErrInput>): ResultOrAsync<Value, ErrOutput> => {
+        if (result.isFailure()) {
+            const fnRes = fn(result.error()!);
+            if (fnRes instanceof Promise) {
+                return fnRes.then((err) => defect(err));
+            }
+            return defect(fnRes);
+        }
+        return ResultImpl.succeed(result.value());
+    };
 }
 
 /**
@@ -78,22 +78,20 @@ export function mapErr<Value, ErrInput extends ResultError, ErrOutput extends Re
  * }));
  */
 export function chain<Input, ErrInput extends ResultError, Output, ErrOutput extends ResultError>(
-  fn: (arg: Input) => ResultAsync<Output, ErrOutput>
-): (
-  result: Result<Input, ErrInput>
-) => ResultAsync<Output, ErrInput | ErrOutput>;
-export function chain<Input, ErrInput  extends ResultError,Output, ErrOutput  extends ResultError>(
-  fn: (arg: Input) => Result<Output, ErrOutput>
+    fn: (arg: Input) => ResultAsync<Output, ErrOutput>,
+): (result: Result<Input, ErrInput>) => ResultAsync<Output, ErrInput | ErrOutput>;
+export function chain<Input, ErrInput extends ResultError, Output, ErrOutput extends ResultError>(
+    fn: (arg: Input) => Result<Output, ErrOutput>,
 ): (result: Result<Input, ErrInput>) => Result<Output, ErrInput | ErrOutput>;
 export function chain<Input, ErrInput extends ResultError, Output, ErrOutput extends ResultError>(
-    fn: (arg: Input) => ResultOrAsync<Output, ErrOutput>
+    fn: (arg: Input) => ResultOrAsync<Output, ErrOutput>,
 ) {
-  return (result: Result<Input, ErrInput>) => {
-    if (result.isSuccess()) {
-      return fn(result.value());
-    }
-    return ResultImpl.defect(result.error()!);
-  };
+    return (result: Result<Input, ErrInput>) => {
+        if (result.isSuccess()) {
+            return fn(result.value());
+        }
+        return ResultImpl.defect(result.error()!);
+    };
 }
 
 /**
@@ -105,23 +103,21 @@ export function chain<Input, ErrInput extends ResultError, Output, ErrOutput ext
  * const handledResult = result.pipe(chainErr(e => succeed([]))); // Converts the failure to success
  */
 export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
-  fn: (arg: ErrInput) => Result<Input, ErrOutput>
+    fn: (arg: ErrInput) => Result<Input, ErrOutput>,
 ): (result: Result<Input, ErrInput>) => Result<Input, ErrInput | ErrOutput>;
 export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
-  fn: (arg: ErrInput) => ResultAsync<Input, ErrOutput>
+    fn: (arg: ErrInput) => ResultAsync<Input, ErrOutput>,
 ): (result: Result<Input, ErrInput>) => ResultAsync<Input, ErrInput | ErrOutput>;
 export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends ResultError>(
-    fn: (arg: ErrInput) => ResultOrAsync<Input, ErrOutput>
+    fn: (arg: ErrInput) => ResultOrAsync<Input, ErrOutput>,
 ) {
-  return (
-    result: Result<Input, ErrInput>
-  ): ResultOrAsync<Input, ErrInput | ErrOutput> => {
-    if (result.isFailure()) {
-      return fn(result.error()!);
-    }
+    return (result: Result<Input, ErrInput>): ResultOrAsync<Input, ErrInput | ErrOutput> => {
+        if (result.isFailure()) {
+            return fn(result.error()!);
+        }
 
-    return ResultImpl.succeed(result.value());
-  };
+        return ResultImpl.succeed(result.value());
+    };
 }
 
 /**
@@ -133,23 +129,21 @@ export function chainErr<Input, ErrInput extends ResultError, ErrOutput extends 
  * result.pipe(tap(state => console.log(state))); // Logs "Task completed!" and returns the original `Result`
  */
 export function tap<Value, Err extends ResultError>(
-  fn: (arg: Value) => void
+    fn: (arg: Value) => void,
 ): (result: Result<Value, Err>) => Result<Value, Err>;
 export function tap<Value, Err extends ResultError>(
-  fn: (arg: Value) => Promise<void>
+    fn: (arg: Value) => Promise<void>,
 ): (result: Result<Value, Err>) => Promise<Result<Value, Err>>;
-export function tap<Value, Err extends ResultError>(
-  fn: (arg: Value) => MaybeAsync<void>
-) {
-  return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {
-    if (result.isSuccess()) {
-      const fnRes = fn(result.value());
-      if (fnRes instanceof Promise) {
-        return fnRes.then(() => result);
-      }
-    }
-    return result;
-  };
+export function tap<Value, Err extends ResultError>(fn: (arg: Value) => MaybeAsync<void>) {
+    return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {
+        if (result.isSuccess()) {
+            const fnRes = fn(result.value());
+            if (fnRes instanceof Promise) {
+                return fnRes.then(() => result);
+            }
+        }
+        return result;
+    };
 }
 
 /**
@@ -161,22 +155,19 @@ export function tap<Value, Err extends ResultError>(
  * result.pipe(tapErr(err => console.error(err))); // Logs the error and returns the original `Result`
  */
 export function tapErr<Value, Err extends ResultError>(
-  fn: (arg: Err) => void
+    fn: (arg: Err) => void,
 ): (result: Result<Value, Err>) => Result<Value, Err>;
 export function tapErr<Value, Err extends ResultError>(
-  fn: (arg: Err) => Promise<void>
+    fn: (arg: Err) => Promise<void>,
 ): (result: Result<Value, Err>) => Promise<Result<Value, Err>>;
-export function tapErr<Value, Err extends ResultError>(
-  fn: (arg: Err) => MaybeAsync<void>
-) {
-  return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {
-    if (result.isFailure()) {
-      fn(result.error()!);
-    }
-    return result;
-  };
+export function tapErr<Value, Err extends ResultError>(fn: (arg: Err) => MaybeAsync<void>) {
+    return (result: Result<Value, Err>): ResultOrAsync<Value, Err> => {
+        if (result.isFailure()) {
+            fn(result.error()!);
+        }
+        return result;
+    };
 }
-
 
 /**
  * Provides a matching structure on the `Result` `Success` case
@@ -191,13 +182,13 @@ export function tapErr<Value, Err extends ResultError>(
  *         ErrorType2: error => someOtherCalculation(error),
  *     })
  * );
-*/
+ */
 export function match<Value, Err extends ResultError, Cases extends MatchCases<Value, Err, any>>(
-  cases: Cases
+    cases: Cases,
 ) {
-  return (result: Result<Value, Err>): MatchCasesReturns<Cases> => {
-    return result.match(cases);
-  };
+    return (result: Result<Value, Err>): MatchCasesReturns<Cases> => {
+        return result.match(cases);
+    };
 }
 
 /**
@@ -213,10 +204,11 @@ export function match<Value, Err extends ResultError, Cases extends MatchCases<V
  *     })
  * );
  */
-export function matchErrors<R extends Result<any, any>, Cases extends ErrorCases<UnwrapResultError<R>, ResultOrAsync<any, UnwrapResultError<R>>>>(
-  errorCases: Cases
-) {
-  return (result: R): R | ErrorCaseReturns<Cases> => {
-    return result.matchErrors(errorCases);
-  }
+export function matchErrors<
+    R extends Result<any, any>,
+    Cases extends ErrorCases<UnwrapResultError<R>, ResultOrAsync<any, UnwrapResultError<R>>>,
+>(errorCases: Cases) {
+    return (result: R): R | ErrorCaseReturns<Cases> => {
+        return result.matchErrors(errorCases);
+    };
 }

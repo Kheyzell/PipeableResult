@@ -1,11 +1,10 @@
-import { defect, succeed } from "../../src/factories";
-import { map } from "../../src/operators";
-import { ResultError } from "../../src/result.interface";
-import { ErrorTag } from "../../src/types";
+import { defect, succeed } from '../../src/factories';
+import { map } from '../../src/operators';
+import { ResultError } from '../../src/result.interface';
+import { ErrorTag } from '../../src/types';
 
-describe("map operator", () => {
-
-    it("should apply the function to a successful Result and return a new Success", () => {
+describe('map operator', () => {
+    it('should apply the function to a successful Result and return a new Success', () => {
         // Arrange
         const result = succeed(5);
 
@@ -17,9 +16,9 @@ describe("map operator", () => {
         expect(mappedResult.value()).toBe(10);
     });
 
-    it("should return the original Failure if the Result is a failure", () => {
+    it('should return the original Failure if the Result is a failure', () => {
         // Arrange
-        const error: ResultError = { [ErrorTag]: "TestError", message: "An error occurred" };
+        const error: ResultError = { [ErrorTag]: 'TestError', message: 'An error occurred' };
         const result = defect<ResultError, number>(error);
 
         // Act
@@ -29,5 +28,4 @@ describe("map operator", () => {
         expect(mappedResult.isFailure()).toBe(true);
         expect(mappedResult.error()).toBe(error);
     });
-
 });

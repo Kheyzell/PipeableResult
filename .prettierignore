@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+
+# Build output
+out
+
+# Lock files
+package-lock.json
+
+# Config files
+babel.config.js
+jest.config.js
+
+# Documentation
+*.md

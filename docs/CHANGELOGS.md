@@ -1,5 +1,9 @@
 # Changelogs
 
+#### 0.4.4 28/08/2025
+
+- add prettier to the project for consistent style
+
 #### 0.4.3 26/08/2025
 
 - add `safe` factory to create a Result from an operation that might throw, encapsulating the exception with a `ResultError`

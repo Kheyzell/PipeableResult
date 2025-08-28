@@ -1,12 +1,7 @@
-import { MaybeAsync } from "../out/src/types";
-import { ResultImpl } from "./result.implementation";
-import {
-  Result,
-  ResultAsync,
-  ResultError,
-  ResultOrAsync,
-} from "./result.interface";
-import { ErrorTag } from "./types";
+import { MaybeAsync } from '../out/src/types';
+import { ResultImpl } from './result.implementation';
+import { Result, ResultAsync, ResultError, ResultOrAsync } from './result.interface';
+import { ErrorTag } from './types';
 
 /** Factories **/
 
@@ -22,7 +17,7 @@ import { ErrorTag } from "./types";
 export function succeed(): Result<void, never>;
 export function succeed<Value>(value: Value): Result<Value, never>;
 export function succeed<Value>(value?: Value): Result<Value | void, never> {
-  return ResultImpl.succeed(value);
+    return ResultImpl.succeed(value);
 }
 
 /**
@@ -35,13 +30,13 @@ export function succeed<Value>(value?: Value): Result<Value | void, never> {
  * const result = defect<HttpNotFoundError>({ [ErrorTag]: "HttpNotFoundError", code: 404, ressourceType: "MediaFile" });*
  */
 export function defect<Err extends ResultError = never, Value = never>(
-  error: Err
+    error: Err,
 ): Result<Value, Err> {
-  return ResultImpl.defect(error);
+    return ResultImpl.defect(error);
 }
 
 /** Error type created when a `safe` method catches an exception and no error handler is provided. */
-export type UnknownError = { [ErrorTag]: "UnknownError"; error: unknown };
+export type UnknownError = { [ErrorTag]: 'UnknownError'; error: unknown };
 
 /**
  * Used to safely wrap up an exception and turn it into a `ResultError`.
@@ -55,58 +50,56 @@ export type UnknownError = { [ErrorTag]: "UnknownError"; error: unknown };
  * const result = await safe<DivisionByZeroError>(() => Promise.resolve(8/0)); // Returns a `ResultAsync<number, DivisionByZeroError>`
  */
 export function safe<Value, Err extends ResultError>(
-  fn: () => Promise<Value>,
-  error: Err
+    fn: () => Promise<Value>,
+    error: Err,
 ): ResultAsync<Value, Err>;
 export function safe<Value, Err extends ResultError>(
-  fn: () => Value,
-  error: Err
+    fn: () => Value,
+    error: Err,
 ): Result<Value, Err>;
 export function safe<Value, Err extends ResultError>(
-  fn: () => Promise<Value>,
-  errorHandler: (ex: unknown) => Err
+    fn: () => Promise<Value>,
+    errorHandler: (ex: unknown) => Err,
 ): ResultAsync<Value, Err>;
 export function safe<Value, Err extends ResultError>(
-  fn: () => Value,
-  errorHandler: (ex: unknown) => Err
+    fn: () => Value,
+    errorHandler: (ex: unknown) => Err,
 ): Result<Value, Err>;
-export function safe<Value>(
-  fn: () => Promise<Value>
-): ResultAsync<Value, UnknownError>;
+export function safe<Value>(fn: () => Promise<Value>): ResultAsync<Value, UnknownError>;
 export function safe<Value>(fn: () => Value): Result<Value, UnknownError>;
 export function safe<Err extends ResultError, Value>(
-  fn: () => MaybeAsync<Value>,
-  errorHandler?: ((ex: unknown) => Err) | Err
+    fn: () => MaybeAsync<Value>,
+    errorHandler?: ((ex: unknown) => Err) | Err,
 ): ResultOrAsync<Value, ResultError> {
-  try {
-    const value = fn();
-    if (value instanceof Promise) {
-      return value
-        .then((value) => succeed(value))
-        .catch((ex) => {
-          return handleExceptionDuringSafe(ex, errorHandler);
-        });
-    }
+    try {
+        const value = fn();
+        if (value instanceof Promise) {
+            return value
+                .then((value) => succeed(value))
+                .catch((ex) => {
+                    return handleExceptionDuringSafe(ex, errorHandler);
+                });
+        }
 
-    return succeed(value);
-  } catch (ex) {
-    return handleExceptionDuringSafe(ex, errorHandler);
-  }
+        return succeed(value);
+    } catch (ex) {
+        return handleExceptionDuringSafe(ex, errorHandler);
+    }
 }
 
 function handleExceptionDuringSafe(
-  ex: unknown,
-  errorHandler?: ((ex: unknown) => ResultError) | ResultError
+    ex: unknown,
+    errorHandler?: ((ex: unknown) => ResultError) | ResultError,
 ) {
-  if (!errorHandler) {
-    return defect({ [ErrorTag]: "UnknownError", error: ex });
-  }
+    if (!errorHandler) {
+        return defect({ [ErrorTag]: 'UnknownError', error: ex });
+    }
 
-  if (typeof errorHandler === "function") {
-    const errorFactory = errorHandler;
-    return defect(errorFactory(ex));
-  }
+    if (typeof errorHandler === 'function') {
+        const errorFactory = errorHandler;
+        return defect(errorFactory(ex));
+    }
 
-  const error = errorHandler;
-  return defect(error);
+    const error = errorHandler;
+    return defect(error);
 }

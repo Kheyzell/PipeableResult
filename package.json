@@ -1,62 +1,63 @@
 {
-  "name": "pipeable-result",
-  "version": "0.4.3",
-  "description": "Small and simple pipeable Result library in TypeScript to handle errors in a more functional way",
-  "main": "out/src/index.js",
-  "types": "out/src/index.d.ts",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "jest",
-    "start": "node out/app.js",
-    "prestart": "npm run build",
-    "build": "tsc",
-    "publish": "npm run build && npm publish"
-  },
-  "exports": {
-    ".": {
-      "import": "./out/src/index.js",
-      "require": "./out/src/index.js",
-      "types": "./out/src/index.d.ts"
+    "name": "pipeable-result",
+    "version": "0.4.4",
+    "description": "Small and simple pipeable Result library in TypeScript to handle errors in a more functional way",
+    "main": "out/src/index.js",
+    "types": "out/src/index.d.ts",
+    "directories": {
+        "test": "tests"
     },
-    "./operators": {
-      "import": "./out/src/operators/index.js",
-      "require": "./out/src/operators/index.js",
-      "types": "./out/src/operators/index.d.ts"
+    "scripts": {
+        "test": "jest",
+        "start": "node out/app.js",
+        "format": "prettier --write .",
+        "prestart": "npm run build",
+        "build": "tsc",
+        "publish": "npm run build && npm publish"
+    },
+    "exports": {
+        ".": {
+            "import": "./out/src/index.js",
+            "require": "./out/src/index.js",
+            "types": "./out/src/index.d.ts"
+        },
+        "./operators": {
+            "import": "./out/src/operators/index.js",
+            "require": "./out/src/operators/index.js",
+            "types": "./out/src/operators/index.d.ts"
+        }
+    },
+    "files": [
+        "out/**/*",
+        "README.md",
+        "LICENSE"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Kheyzell/PipeableResult.git"
+    },
+    "keywords": [
+        "library",
+        "npm",
+        "TypeScript",
+        "typescript",
+        "Result",
+        "Pipeable",
+        "Errors"
+    ],
+    "author": "Kheyzell",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/Kheyzell/PipeableResult/issues"
+    },
+    "homepage": "https://github.com/Kheyzell/PipeableResult#readme",
+    "devDependencies": {
+        "@babel/preset-env": "^7.26.0",
+        "@babel/preset-typescript": "^7.26.0",
+        "@types/jest": "^29.5.14",
+        "babel-jest": "^29.7.0",
+        "jest": "^29.7.0",
+        "prettier": "3.6.2",
+        "typescript": "^5.7.2"
     }
-  },
-  "files": [
-    "out/**/*",
-    "README.md",
-    "LICENSE"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Kheyzell/PipeableResult.git"
-  },
-  "keywords": [
-    "library",
-    "npm",
-    "TypeScript",
-    "typescript",
-    "Result",
-    "Pipeable",
-    "Errors"
-  ],
-  "author": "Kheyzell",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Kheyzell/PipeableResult/issues"
-  },
-  "homepage": "https://github.com/Kheyzell/PipeableResult#readme",
-  "dependencies": {},
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "@babel/preset-env": "^7.26.0",
-    "@babel/preset-typescript": "^7.26.0",
-    "@types/jest": "^29.5.14",
-    "babel-jest": "^29.7.0",
-    "typescript": "^5.7.2"
-  }
 }

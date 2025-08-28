@@ -1,6 +1,6 @@
 module.exports = {
     transform: {
-        "^.+\\.tsx?$": "babel-jest"
+        '^.+\\.tsx?$': 'babel-jest',
     },
-    moduleFileExtensions: ["js", "ts", "tsx", "json", "node"]
+    moduleFileExtensions: ['js', 'ts', 'tsx', 'json', 'node'],
 };
